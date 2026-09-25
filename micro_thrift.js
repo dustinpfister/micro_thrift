@@ -1,20 +1,31 @@
 /********* **********
 Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 
-1.0) SImg Class    - Allows for storing image assets in source
-  1.1) tile_assets - SImg assets used to tile the WMap instance
-  1.2) pool_assets - SImg assets used to skin ObjPool objects
-2.0) ObjPool CLASS - An Object pool class used for sprite objects
-3.0) Pathfinder    - Path finding based on EasyStar
-4.0) WMap          - A world Map system
-5.0) StateMachine  - The State Machine of the game
-  5.1) boot state  - sets up the map, and other aspects of the game state
-  5.2) floor state - shows the current state of the 'floor' of the thrift store
-6.0) App loop      - Main application loop of the game
+1.0) Conf          - a config object containing constants used throughout the codebase
+2.0) SImg Class    - Allows for storing image assets in source
+  2.1) tile_assets - SImg assets used to tile the WMap instance
+  2.2) pool_assets - SImg assets used to skin ObjPool objects
+3.0) ObjPool CLASS - An Object pool class used for sprite objects
+4.0) Pathfinder    - Path finding based on EasyStar
+5.0) WMap          - A world Map system
+6.0) StateMachine  - The State Machine of the game
+  6.1) boot state  - sets up the map, and other aspects of the game state
+  6.2) floor state - shows the current state of the 'floor' of the thrift store
+7.0) App loop      - Main application loop of the game
 
 ********** *********/
 /********* **********
-  1.0) SImg Class + helper functions
+  1.0) Config
+********** *********/
+const conf = {};
+// max number of display objects used for sm.pool
+conf.MAX_OBJECTS = {
+  worker: 1,
+  customer: 3
+};
+conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.woker + conf.MAX_OBJECTS.customer.total; 
+/********* **********
+  2.0) SImg Class + helper functions
 ********** *********/
 const create_canvas_sheet = (img) => {
     const canvas = document.createElement('canvas');
@@ -54,7 +65,7 @@ class SImg {
 };
 
 /********* **********
-  1.1) tile_assets
+  2.1) tile_assets
 ********** *********/
 const simg_tiles_null = new SImg( {
   width: 64, frame_width: 16,
@@ -104,7 +115,7 @@ const simg_tiles_stock = new SImg( {
   ] } );
 
 /********* **********
-  1.2) pool_assets
+  2.2) pool_assets
 ********** *********/
 const simg_pool_customer = new SImg( {
   width: 16, frame_width: 16, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
@@ -149,11 +160,9 @@ const simg_pool_worker = new SImg( {
   ] } );
 
 /********* **********
-  2.0) ObjPool CLASS
+  3.0) ObjPool CLASS
 ********** *********/
-
 class ObjPool {
-
   //constructor ( count = 10, simg = simg_tiles_null ) {
   constructor ( opt= {} ) {
     this.count = opt.count || 10;
@@ -175,6 +184,27 @@ class ObjPool {
       this.objects.push(obj);
       i += 1;
     }
+  }
+  
+  get_inactive(){
+    let i = 0;
+    while(i < this.count){
+      const obj = this.objects[i];
+      if(!obj.active){
+        return obj;
+      }
+      i += 1;
+    }
+    return null;
+  };
+  
+  get_data_count (data_key='type', value='customer') {
+    return this.objects.reduce( ( acc, obj ) => {  
+      if(obj.data[data_key] === value){
+          return acc + 1;
+      }
+      return acc;
+    }, 0);
   }
 
   update ( ctx, t=0, for_obj=()=>{} ) {
@@ -216,7 +246,7 @@ class ObjPool {
 }
 
 /********* **********
-  3.0) PathFinder
+  4.0) PathFinder
 ********** *********/
 // This is based on what I found here
 // PathFinder License: MIT.
@@ -705,7 +735,7 @@ class PathFinder {
 }
 
 /********* **********
-  4.0) WMap world map system
+  5.0) WMap world map system
 ********** *********/
 
 class WMap {
@@ -830,7 +860,7 @@ class WMap {
 }
 
 /********* **********
-  5.0) StateMachine
+  6.0) StateMachine
 ********** *********/
 const StateMachine = {
     current_key: 'boot',
@@ -867,8 +897,27 @@ StateMachine.pointer = function (e) {
   state.pointer.call(sm, sm, x, y, e)
 };
 
+// spawn an object_type for sm.pool
+StateMachine.spawn = function (object_type='customer') {
+  const sm = this;
+  const type_count = sm.pool.get_data_count('type', object_type);
+  if(type_count < conf.MAX_OBJECTS[object_type]){
+    //const obj = sm.pool.objects[0];
+    const obj = sm.pool.get_inactive();
+    if(obj){
+      const map = sm.map;
+      obj.active = true;
+      obj.data.type = object_type;
+      const pos = map.getRandomByType([1]);
+      obj.x = map.sx + pos.x * map.tile_size;
+      obj.y = map.sy + pos.y * map.tile_size;  
+      obj.simg = sm.pool.sheets[object_type === 'customer' ? 0 : 1];
+    }
+  }
+};
+
 /********* **********
-  5.1) boot state
+  6.1) boot state
 ********** *********/
 StateMachine.states.boot = {
 
@@ -876,11 +925,11 @@ StateMachine.states.boot = {
   },
 
   init: function(sm) {
-
+  
     sm.pool = new ObjPool({
-      count: 3, w: 24, h: 24, sheets:[simg_pool_customer, simg_pool_worker]
+      count: conf.MAX_OBJECTS.total, w: 24, h: 24, sheets:[simg_pool_customer, simg_pool_worker]
     });
-
+    
     sm.map = new WMap({
       width: 16, height: 16,
       sx: 10, sy: 10,
@@ -913,8 +962,7 @@ StateMachine.states.boot = {
          't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,' +
          't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,' +
          't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,' +
-         't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,').split(',')
-      ,
+         't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,').split(','),
       parse_data : (map, tData, tile, i) => {
           tile.data.count = 0;
           if(tData[0] === 't'){
@@ -927,11 +975,11 @@ StateMachine.states.boot = {
             tile.type_index = n > 0 ? 4 : tile.type_index;
             tile.type_index = n >= 50 ? 5 : tile.type_index;
           }
-      },
+      }
     });
-
+    
     StateMachine.set_state('floor');
-
+    
   },
 
   update: function(sm, t) {},
@@ -941,7 +989,7 @@ StateMachine.states.boot = {
 };
 
 /********* **********
-  5.2) floor State
+  6.2) floor State
 ********** *********/
 
 StateMachine.states.floor = {
@@ -955,14 +1003,13 @@ StateMachine.states.floor = {
 
   update: function(sm, t) {
     const map = sm.map;
+    
+    sm.spawn('customer');
+    sm.spawn('worker');
+    
     sm.pool.update(ctx, 0, function(obj){
       const path = obj.data.path = obj.data.path || [];
-      if(!obj.active){
-        obj.active = true;
-        const pos = map.getRandomByType([1]);
-        obj.x = map.sx + pos.x * map.tile_size;
-        obj.y = map.sy + pos.y * map.tile_size;
-      }
+      
       if(obj.active && path.length === 0){
         const pos1 = {
             x: (obj.x - map.sx) / map.tile_size,
@@ -990,7 +1037,7 @@ StateMachine.states.floor = {
 };
 
 /********* **********
-  6.0) APP LOOP
+  7.0) APP LOOP
 ********** *********/
 const canvas = document.getElementById('the_canvas'); //document.createElement('canvas');
 const ctx = canvas.getContext('2d');

@@ -6,7 +6,7 @@
 * going with 16px assets, with a 16 by 16 map, and 640 by 480 screen res
 * new SImg asset for customers and workers
 * favicon
-* (pending) - have both 'worker' and 'customer' object pool types
+* have both 'worker' and 'customer' types
 * (pending) - start an item database
 * (pending) - have 'worker' type objects stock items
 * (pending) - have 'customer' type objects buy items
