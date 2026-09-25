@@ -5,7 +5,7 @@
 * starting out with the code that I worked out at jsFiddle
 * going with 16px assets, with a 16 by 16 map, and 640 by 480 screen res
 * new SImg asset for customers and workers
-* (pending) - favicon
+* favicon
 * (pending) - have both 'worker' and 'customer' object pool types
 * (pending) - start an item database
 * (pending) - have 'worker' type objects stock items
