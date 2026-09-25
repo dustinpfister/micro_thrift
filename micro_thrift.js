@@ -3,6 +3,7 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 
 1.0) SImg Class    - Allows for storing image assets in source
   1.1) tile_assets - SImg assets used to tile the WMap instance
+  1.2) pool_assets - SImg assets used to skin ObjPool objects
 2.0) ObjPool CLASS - An Object pool class used for sprite objects
 3.0) Pathfinder    - Path finding based on EasyStar
 4.0) WMap          - A world Map system
@@ -103,6 +104,51 @@ const simg_tiles_stock = new SImg( {
   ] } );
 
 /********* **********
+  1.2) pool_assets
+********** *********/
+const simg_pool_customer = new SImg( {
+  width: 16, frame_width: 16, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
+  px: [
+    6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+    6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,0,6,6,6,6,0,0,0,0,0,0,0,0,6,
+    6,0,6,6,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,6,6,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,6,6,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,0,6,6,6,6,0,0,0,0,0,0,0,0,6,
+    6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
+    6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+  ] } );
+
+const simg_pool_worker = new SImg( {
+  width: 16, frame_width: 16, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
+  px: [
+    7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+    7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
+    7,0,7,0,0,0,0,7,0,0,0,0,0,0,0,7,
+    7,0,7,0,7,7,0,7,0,0,0,0,0,0,0,7,
+    7,0,7,0,7,7,0,7,0,0,0,0,0,0,0,7,
+    7,0,0,7,0,0,7,0,0,0,0,0,0,0,0,7,
+    7,0,0,7,0,0,7,0,0,0,0,0,0,0,0,7,
+    7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
+    7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
+    7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
+    7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
+    7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
+    7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
+    7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
+    7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
+    7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
+  ] } );
+
+/********* **********
   2.0) ObjPool CLASS
 ********** *********/
 
@@ -111,7 +157,8 @@ class ObjPool {
   //constructor ( count = 10, simg = simg_tiles_null ) {
   constructor ( opt= {} ) {
     this.count = opt.count || 10;
-    this.simg = opt.simg || simg_tiles_null
+    //this.simg = opt.simg || simg_pool_customer;
+    this.sheets = opt.sheets || [simg_pool_customer];
     this.objects = [];
     let i = 0;
     while(i < this.count){
@@ -119,7 +166,7 @@ class ObjPool {
         x: 0, y: 0, w: opt.w || 32, h: opt.h || 32,
         frame_index: opt.frame_index || 0,
         active: false,
-        simg : this.simg,
+        simg : opt.sheet_index ? this.sheets[ opt.sheet_index ] : this.sheets[0],
         heading: Math.PI * 0.5, 
         data: {},     // standard place to park app specfic data
         pps : 32,     // pixels per second
@@ -831,7 +878,7 @@ StateMachine.states.boot = {
   init: function(sm) {
 
     sm.pool = new ObjPool({
-      count: 3, w: 24, h: 24, frame_index: 3
+      count: 3, w: 24, h: 24, sheets:[simg_pool_customer, simg_pool_worker]
     });
 
     sm.map = new WMap({
