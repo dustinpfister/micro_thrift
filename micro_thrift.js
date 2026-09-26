@@ -23,7 +23,34 @@ conf.MAX_OBJECTS = {
   worker: 1,
   customer: 3
 };
-conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.woker + conf.MAX_OBJECTS.customer.total; 
+conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.woker + conf.MAX_OBJECTS.customer.total;
+conf.price_options = [ // price options 0-29
+  0.05, 0.10, 0.25, 0.50, 0.75,   1,   2,   3,   4,   5, 
+     6,    7,    8,    9,   10,  12,  15,  20,  50,  75, 
+   100,   125, 150,  175,  200, 225, 250, 275, 300, 325
+]
+conf.items = [
+  {
+    desc: 'small plastic container',
+    value_index: 0,
+    donation_rate: 1.00
+  },
+  {
+    desc: 'binder',
+    value_index: 2,
+    donation_rate: 0.85
+  },
+  {
+    desc: 'plain white mug',
+    value_index: 3,
+    donation_rate: 0.45
+  },
+  {
+    desc: 'mid century pyrex bowl',
+    value_index: 18,
+    donation_rate: 0.05
+  }
+];
 /********* **********
   2.0) SImg Class + helper functions
 ********** *********/
@@ -173,6 +200,7 @@ class ObjPool {
     while(i < this.count){
       const obj = {
         x: 0, y: 0, w: opt.w || 32, h: opt.h || 32,
+        i: i,
         frame_index: opt.frame_index || 0,
         active: false,
         simg : opt.sheet_index ? this.sheets[ opt.sheet_index ] : this.sheets[0],
@@ -763,7 +791,7 @@ class WMap {
       const tile = {
           //type_index: tile_data[i] || 0,
           type_index: this.default_type,
-          x: x, y: y, i: 1,
+          x: x, y: y, i: i,
           data: {}
       };
       if(opt.data){
@@ -945,6 +973,47 @@ StateMachine.states.boot = {
       ],
       tile_size : 24,
       walkables: [0, 1],
+      data: {
+        17 : 'b03w0000w0103w0318',
+        19 : 'b03',
+        33 : 'b03w0317',
+        35 : 'b03w0315',
+        176: 'b02',177: 'b02',178: 'b02',179: 'b02',180: 'b02',181: 'b02',182: 'b02',
+        185: 'b02',186: 'b02',187: 'b02',188: 'b02',189: 'b02',190: 'b02',191: 'b02'
+      },
+      parse_data : (map, tData, tile, i) => {
+        tile.data.count = 0;
+        tile.data.items = [];
+        if(!tData){
+          return;
+        }
+        const parts = tData.match(/[a-zA-Z]\d+/g);
+        if(!parts){
+          return;
+        }
+        parts.forEach((part)=>{
+          if(part[0] === 'b'){
+            tile.type_index = parseInt( part.slice(1, 3) );
+          }
+          if(part[0] === 'w'){
+             const n = tile.data.count += 1;
+             const item_index = parseInt( part.slice(1, 3) );
+             const price_index = parseInt( part.slice(3, 5) );
+             const item = conf.items[ item_index ];
+             tile.type_index = n > 0 ? 4 : tile.type_index;
+             tile.type_index = n >= 50 ? 5 : tile.type_index;
+             
+             tile.data.items.push({
+                item_index: item_index,
+                desc: item.desc,
+                price: conf.price_options[ price_index ]
+                
+             })
+          }
+        });
+        console.log(tile.data.count)
+      }
+      /*
       data:
         ('t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,' +
          't01,c01,t01,c01,t01,c01,t01,c01,t01,t01,t01,t01,t01,t01,t01,t01,' +
@@ -976,6 +1045,7 @@ StateMachine.states.boot = {
             tile.type_index = n >= 50 ? 5 : tile.type_index;
           }
       }
+      */
     });
     
     StateMachine.set_state('floor');
