@@ -8,10 +8,11 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 3.0) ObjPool CLASS - An Object pool class used for sprite objects
 4.0) Pathfinder    - Path finding based on EasyStar
 5.0) WMap          - A world Map system
-6.0) StateMachine  - The State Machine of the game
-  6.1) boot state  - sets up the map, and other aspects of the game state
-  6.2) floor state - shows the current state of the 'floor' of the thrift store
-7.0) App loop      - Main application loop of the game
+6.0) AI            - Artificial intelligence of sm.pool objects
+7.0) StateMachine  - The State Machine of the game
+  7.1) boot state  - sets up the map, and other aspects of the game state
+  7.2) floor state - shows the current state of the 'floor' of the thrift store
+8.0) App loop      - Main application loop of the game
 
 ********** *********/
 /********* **********
@@ -888,7 +889,49 @@ class WMap {
 }
 
 /********* **********
-  6.0) StateMachine
+  6.0) AI
+********** *********/
+const AI = {}
+
+AI.main = function( sm, obj ){
+  const path = obj.data.path;
+  const map = sm.map;
+  
+  if(obj.active && path.length > 0){
+    const pos = path.pop();
+    obj.x = map.sx + pos.x * map.tile_size;
+    obj.y = map.sy + pos.y * map.tile_size;
+  }
+  
+  AI[obj.data.type](sm, obj)
+  
+};
+
+AI.worker = function(sm, obj){
+
+};
+
+AI.customer = function(sm, obj){
+  const path = obj.data.path;
+  const map = sm.map;
+
+  // if active and no path
+  if(obj.active && path.length === 0){
+    const pos1 = {
+        x: (obj.x - map.sx) / map.tile_size,
+        y: (obj.y - map.sy) / map.tile_size
+    }
+    const pos2 = map.getRandomByType([1]);
+    map.getPath(pos2.x,pos2.y,pos1.x,pos1.y)
+    .then((path_new)=>{
+      obj.data.path = path_new;
+    });
+  }
+
+};
+
+/********* **********
+  7.0) StateMachine
 ********** *********/
 const StateMachine = {
     current_key: 'boot',
@@ -926,7 +969,7 @@ StateMachine.pointer = function (e) {
 };
 
 // spawn an object_type for sm.pool
-StateMachine.spawn = function (object_type='customer') {
+StateMachine.spawn = function ( object_type='customer' ) {
   const sm = this;
   const type_count = sm.pool.get_data_count('type', object_type);
   if(type_count < conf.MAX_OBJECTS[object_type]){
@@ -942,10 +985,11 @@ StateMachine.spawn = function (object_type='customer') {
       obj.simg = sm.pool.sheets[object_type === 'customer' ? 0 : 1];
     }
   }
+  
 };
 
 /********* **********
-  6.1) boot state
+  7.1) boot state
 ********** *********/
 StateMachine.states.boot = {
 
@@ -1011,7 +1055,6 @@ StateMachine.states.boot = {
              })
           }
         });
-        console.log(tile.data.count)
       }
       /*
       data:
@@ -1059,7 +1102,7 @@ StateMachine.states.boot = {
 };
 
 /********* **********
-  6.2) floor State
+  7.2) floor State
 ********** *********/
 
 StateMachine.states.floor = {
@@ -1078,24 +1121,11 @@ StateMachine.states.floor = {
     sm.spawn('worker');
     
     sm.pool.update(ctx, 0, function(obj){
-      const path = obj.data.path = obj.data.path || [];
-      
-      if(obj.active && path.length === 0){
-        const pos1 = {
-            x: (obj.x - map.sx) / map.tile_size,
-            y: (obj.y - map.sy) / map.tile_size
-        }
-        const pos2 = map.getRandomByType([1]);
-        map.getPath(pos2.x,pos2.y,pos1.x,pos1.y)
-        .then((path_new)=>{
-          obj.data.path = path_new;
-        });
+      obj.data.path = obj.data.path || [];
+      if(obj.active){
+        AI.main(sm, obj);
       }
-      if(obj.active && path.length > 0){
-        const pos = path.pop();
-        obj.x = map.sx + pos.x * map.tile_size;
-        obj.y = map.sy + pos.y * map.tile_size;
-      }
+
     });
   },
 
@@ -1107,7 +1137,7 @@ StateMachine.states.floor = {
 };
 
 /********* **********
-  7.0) APP LOOP
+  8.0) APP LOOP
 ********** *********/
 const canvas = document.getElementById('the_canvas'); //document.createElement('canvas');
 const ctx = canvas.getContext('2d');

@@ -11,5 +11,6 @@
 * started a config object to store various constants used in the codebase
 * have both 'worker' and 'customer' types
 * started an item and price option database
+* started a main AI object for scripts that effect worker and customer actions
 * (pending) - have 'worker' type objects stock items
 * (pending) - have 'customer' type objects buy items
