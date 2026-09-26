@@ -815,6 +815,25 @@ class WMap {
     }
     return null;
   }
+  
+  get_border_tiles (tx, ty) {
+    let x = tx -1, y = ty - 1;
+    const options = []
+    while(y <= ty + 1){
+      x = tx -1;
+      while(x <= tx + 1){
+        if(!(x == tx && y == ty)){
+          const tile = this.get(x, y);
+          if(tile){
+            options.push(tile)
+          }
+        }
+        x += 1;
+      }
+      y += 1;
+    }
+    return options
+  }
 
   getByPX (px, py) {
     const x = Math.floor( ( px - this.sx ) / this.tile_size);
@@ -903,11 +922,24 @@ AI.main = function( sm, obj ){
     obj.y = map.sy + pos.y * map.tile_size;
   }
   
-  AI[obj.data.type](sm, obj)
+  AI[obj.data.type](sm, obj);
   
 };
 
 AI.worker = function(sm, obj){
+  const path = obj.data.path, map = sm.map;
+  if(obj.active && path.length === 0){
+    const option = map.getRandomByType([3,4,5]);
+    //console.log(option)
+    const pos1 = {
+        x: (obj.x - map.sx) / map.tile_size,
+        y: (obj.y - map.sy) / map.tile_size
+    }
+    map.getPath(option.x,option.y,pos1.x,pos1.y)
+    .then((path_new)=>{
+      obj.data.path = path_new;
+    });
+  }
 
 };
 
@@ -1056,41 +1088,10 @@ StateMachine.states.boot = {
           }
         });
       }
-      /*
-      data:
-        ('t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,' +
-         't01,c01,t01,c01,t01,c01,t01,c01,t01,t01,t01,t01,t01,t01,t01,t01,' +
-         't01,c01,t01,c01,t01,c01,t01,c01,t01,t01,c01,c01,c01,t01,t01,t01,' +
-         't01,c01,t01,c01,t01,c01,t01,c01,t01,t01,c01,c01,c01,t01,t01,t01,' +
-         't01,c01,t01,c01,t01,c01,t01,c01,t01,t01,t01,t01,t01,t01,t01,t01,' +
-         't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,c01,' +
-         'c01,t01,c01,c01,c01,c01,c01,c01,t01,t01,c01,t01,c01,t01,t01,c01,' +
-         'c01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,c01,' +
-         'c01,t01,c01,c01,c01,c01,c01,c01,t01,t01,c01,t01,c01,t01,t01,c01,' +
-         'c01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,c01,' +
-         'c01,c01,c01,c01,c01,c01,c01,c01,t01,t01,c01,c01,c01,c01,c01,c01,' +
-         't02,t02,t02,t02,t02,t02,t02,t02,t01,t01,t02,t02,t02,t02,t02,t02,' +
-         't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,' +
-         't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,' +
-         't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,' +
-         't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,' +
-         't01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,t01,').split(','),
-      parse_data : (map, tData, tile, i) => {
-          tile.data.count = 0;
-          if(tData[0] === 't'){
-            tile.type_index = parseInt( tData.slice(1, 3) );
-          }
-          if(tData[0] === 'c'){
-            tile.type_index = 3;
-            const n = parseInt( tData.slice(1, 3) );
-            tile.data.count = n;
-            tile.type_index = n > 0 ? 4 : tile.type_index;
-            tile.type_index = n >= 50 ? 5 : tile.type_index;
-          }
-      }
-      */
     });
-    
+
+    console.log( sm.map.get_border_tiles(0, 0) )
+
     StateMachine.set_state('floor');
     
   },
@@ -1144,13 +1145,11 @@ const ctx = canvas.getContext('2d');
 canvas.width = 640;
 canvas.height = 480;
 
-
 canvas.addEventListener('click', function(e)  {
   StateMachine.pointer(e);
 });
 
 document.body.appendChild(canvas);
-
 
 let = lt = new Date();
 const loop = () => {
@@ -1165,6 +1164,5 @@ const loop = () => {
 };
 StateMachine.set_state('boot');
 loop();
-
 
 
