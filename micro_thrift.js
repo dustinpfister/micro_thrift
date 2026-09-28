@@ -807,16 +807,21 @@ class WMap {
 
   get(ix, y){
     if(arguments.length === 1 && ix >=0 && ix < this.grid.length){
-        return this.grid[ix]
+      if(ix <= -1 || ix >= this.grid.length){
+       return null;
+      }
+      return this.grid[ix];
     }
-    const tile = this.grid[ y * this.width + ix ];
-    if(tile){
-        return tile;
+    if(arguments.length === 2){
+      if(ix <= -1 || ix>= this.width || y <= -1 || y>= this.height){
+        return null;
+      }
+      return this.grid[ y * this.width + ix ];
     }
     return null;
   }
   
-  get_border_tiles (tx, ty) {
+  get_border_tiles (tx=0, ty=0, include_types=null) {
     let x = tx -1, y = ty - 1;
     const options = []
     while(y <= ty + 1){
@@ -824,8 +829,16 @@ class WMap {
       while(x <= tx + 1){
         if(!(x == tx && y == ty)){
           const tile = this.get(x, y);
-          if(tile){
-            options.push(tile)
+          if(tile && !include_types){
+            options.push(tile);
+          }
+          if(tile && include_types){
+            const test = include_types.some((type_index)=>{
+              return type_index === tile.type_index;
+            });
+            if(test){
+              options.push(tile);
+            }
           }
         }
         x += 1;
@@ -1090,7 +1103,7 @@ StateMachine.states.boot = {
       }
     });
 
-    console.log( sm.map.get_border_tiles(0, 0) )
+    console.log( sm.map.get_border_tiles(1, 1, [ 1 ]) )
 
     StateMachine.set_state('floor');
     
