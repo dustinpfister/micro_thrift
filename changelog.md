@@ -2,7 +2,7 @@
 
 ## R1 () - 
 
-## R0 () - Core of game started
+## R0 () - Very basic core idea of the game started
 
 * starting out with the code that I worked out at jsFiddle
 * going with 16px assets, with a 16 by 16 map, and 640 by 480 screen res
@@ -13,5 +13,7 @@
 * started an item and price option database
 * started a main AI object for scripts that effect worker and customer actions
 * have a map.get\_border\_tiles method with include\_types option
-* (pending) - have 'worker' type objects stock items
+* have 'worker' type objects stock items
 * (pending) - have 'customer' type objects buy items
+* (pending) - worker AI: basic probability system for item generation
+* (pending) - customer AI : basic probability system for buying an item

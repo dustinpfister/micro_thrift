@@ -24,6 +24,7 @@ conf.MAX_OBJECTS = {
   worker: 1,
   customer: 3
 };
+conf.MAX_SHELF_ITEMS = 10;
 conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.woker + conf.MAX_OBJECTS.customer.total;
 conf.price_options = [ // price options 0-29
   0.05, 0.10, 0.25, 0.50, 0.75,   1,   2,   3,   4,   5, 
@@ -940,19 +941,42 @@ AI.main = function( sm, obj ){
 };
 
 AI.worker = function(sm, obj){
-  const path = obj.data.path, map = sm.map;
-  if(obj.active && path.length === 0){
-    const option = map.getRandomByType([3,4,5]);
-    //console.log(option)
+  const path = obj.data.path, 
+  map = sm.map;
+  
+  // no path but we do have a shelf target
+  if(obj.active && path.length === 0 && obj.data.shelf_target){
+    const target = obj.data.shelf_target;
+    
+    StateMachine.stock_item(target, 0, 0);
+    
+    obj.data.shelf_target = null;
+  }
+  
+  // no path and no shelf target
+  if(obj.active && path.length === 0 && !obj.data.shelf_target){
+    
+    // map position of object
     const pos1 = {
-        x: (obj.x - map.sx) / map.tile_size,
-        y: (obj.y - map.sy) / map.tile_size
-    }
-    map.getPath(option.x,option.y,pos1.x,pos1.y)
+        x: ( obj.x - map.sx ) / map.tile_size,
+        y: ( obj.y - map.sy ) / map.tile_size
+    };
+    
+    // set a shelf tile
+    const target = obj.data.shelf_target = map.getRandomByType( [3,4,5] );
+    
+    // go to a floor tile near the shelf
+    const floor_tile_options = map.get_border_tiles(target.x, target.y, [1] );
+    const floor_tile = floor_tile_options[ Math.floor( Math.random() * floor_tile_options.length ) ];
+    
+    map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
     .then((path_new)=>{
       obj.data.path = path_new;
     });
+    
   }
+  
+  
 
 };
 
@@ -1030,7 +1054,35 @@ StateMachine.spawn = function ( object_type='customer' ) {
       obj.simg = sm.pool.sheets[object_type === 'customer' ? 0 : 1];
     }
   }
-  
+};
+
+StateMachine.is_shelf = function(tile){
+  return [3,4,5].some((ti)=>{
+    return tile.type_index === ti;
+  });
+};
+
+StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
+  if( !(StateMachine.is_shelf(tile)) ){
+    console.warn('can only stock at a shelf tile!');
+    return;
+  }
+  if(tile.data.count >= conf.MAX_SHELF_ITEMS){
+     console.warn('shelf is maxed out');
+     return;
+  }
+  tile.data.count = tile.data.count === undefined ? 0 : tile.data.count;
+  const n = tile.data.count += 1;
+  const item = conf.items[ item_index ];
+  tile.type_index = 3;
+  tile.type_index = n > 0 ? 4 : tile.type_index;
+  tile.type_index = n >= 5 ? 5 : tile.type_index;
+  tile.frame_index = tile.type_index - 3;
+  tile.data.items.push({
+  item_index: item_index,
+    desc: item.desc,
+    price: conf.price_options[ price_index ]
+  });
 };
 
 /********* **********
@@ -1063,10 +1115,16 @@ StateMachine.states.boot = {
       tile_size : 24,
       walkables: [0, 1],
       data: {
-        17 : 'b03w0000w0103w0318',
-        19 : 'b03',
-        33 : 'b03w0317',
-        35 : 'b03w0315',
+        17 : 'b03', 19 : 'b03', 33 : 'b03', 35 : 'b03',
+        
+        65 : 'b03', 81 : 'b03',  97 : 'b03', 113 : 'b03', 129 : 'b03', 145 : 'b03',
+        67 : 'b03', 83 : 'b03',  99 : 'b03', 115 : 'b03', 131 : 'b03', 147 : 'b03',
+        69 : 'b03', 85 : 'b03', 101 : 'b03', 117 : 'b03', 133 : 'b03', 149 : 'b03',
+        
+        73 : 'b03', 74 : 'b03', 75 : 'b03', 76 : 'b03', 77 : 'b03', 78 : 'b03',
+        105 : 'b03', 106 : 'b03', 107 : 'b03', 108 : 'b03', 109 : 'b03', 110 : 'b03',
+        137 : 'b03', 138 : 'b03', 139 : 'b03', 140 : 'b03', 141 : 'b03', 142 : 'b03',
+        
         176: 'b02',177: 'b02',178: 'b02',179: 'b02',180: 'b02',181: 'b02',182: 'b02',
         185: 'b02',186: 'b02',187: 'b02',188: 'b02',189: 'b02',190: 'b02',191: 'b02'
       },
@@ -1085,25 +1143,24 @@ StateMachine.states.boot = {
             tile.type_index = parseInt( part.slice(1, 3) );
           }
           if(part[0] === 'w'){
-             const n = tile.data.count += 1;
+             //const n = tile.data.count += 1;
              const item_index = parseInt( part.slice(1, 3) );
              const price_index = parseInt( part.slice(3, 5) );
+             sm.stock_item(tile, item_index, price_index);
+             /*
              const item = conf.items[ item_index ];
              tile.type_index = n > 0 ? 4 : tile.type_index;
              tile.type_index = n >= 50 ? 5 : tile.type_index;
-             
              tile.data.items.push({
                 item_index: item_index,
                 desc: item.desc,
                 price: conf.price_options[ price_index ]
-                
-             })
+             });
+             */
           }
         });
       }
     });
-
-    console.log( sm.map.get_border_tiles(1, 1, [ 1 ]) )
 
     StateMachine.set_state('floor');
     
