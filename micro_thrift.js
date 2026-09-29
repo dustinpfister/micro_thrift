@@ -970,11 +970,23 @@ AI.worker = function(sm, obj){
 AI.customer = function(sm, obj){
   const path = obj.data.path;
   const map = sm.map;
-  // if active and no path
-  if(obj.active && path.length === 0){
+  // active, no path, but DO have a target
+  if(obj.active && path.length === 0 && obj.data.shelf_target){
+    const target = obj.data.shelf_target;
+    const items = target.data.items;
+    if(items.length > 0){
+       console.log('what do we have here?');
+       console.log(items);
+    }
+    obj.data.shelf_target = null;
+  }
+  // active, no path, and no target
+  if(obj.active && path.length === 0 && !obj.data.shelf_target){
     const pos1 = map.px_to_pos(obj.x, obj.y);
-    const pos2 = map.getRandomByType([1]);
-    map.getPath(pos2.x,pos2.y,pos1.x,pos1.y)
+    const target = obj.data.shelf_target = map.getRandomByType( [3,4,5] );
+    const floor_tile_options = map.get_border_tiles(target.x, target.y, [1] );
+    const floor_tile = floor_tile_options[ Math.floor( Math.random() * floor_tile_options.length ) ];    
+    map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
     .then((path_new)=>{
       obj.data.path = path_new;
     });
