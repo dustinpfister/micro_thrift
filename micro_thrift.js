@@ -250,7 +250,6 @@ class ObjPool {
         obj.y += obj.pps * Math.sin(obj.heading) * ( t / 1000 );
       }
       for_obj(obj, i);
-      //this.render_object(ctx, i);
       i += 1;
     }
   }
@@ -749,7 +748,6 @@ class PathFinder {
         startY = from[1],
         destinationX = to[0],
         destinationY = to[1];
-
         this._easyStar.findPath(startX, startY, destinationX, destinationY, this._callback);
         this._prepared = true;
     }
@@ -758,7 +756,6 @@ class PathFinder {
         if (this._prepared === null) {
             throw new Error("no Calculation prepared!");
         }
-
         this._easyStar.calculate();
     }
 
@@ -791,7 +788,6 @@ class WMap {
       const x = i % this.width;
       const y = Math.floor(i / this.width);
       const tile = {
-          //type_index: tile_data[i] || 0,
           type_index: this.default_type,
           x: x, y: y, i: i,
           data: {}
@@ -896,6 +892,14 @@ class WMap {
     return options[ Math.floor( Math.random() * options.length ) ];
   }
 
+  px_to_pos (px, py) {
+    const map = this;
+    return {
+        x: Math.floor( ( px - map.sx ) / map.tile_size ),
+        y: Math.floor( ( py - map.sy ) / map.tile_size )
+    };
+  }
+
   render_grid (ctx ) {
     let i = 0;
     const len = this.width * this.height;
@@ -929,74 +933,52 @@ const AI = {}
 AI.main = function( sm, obj ){
   const path = obj.data.path;
   const map = sm.map;
-  
   if(obj.active && path.length > 0){
     const pos = path.pop();
     obj.x = map.sx + pos.x * map.tile_size;
     obj.y = map.sy + pos.y * map.tile_size;
   }
-  
+  // run script for current type
   AI[obj.data.type](sm, obj);
-  
 };
 
 AI.worker = function(sm, obj){
   const path = obj.data.path, 
   map = sm.map;
-  
   // no path but we do have a shelf target
   if(obj.active && path.length === 0 && obj.data.shelf_target){
     const target = obj.data.shelf_target;
-    
     StateMachine.stock_item(target, 0, 0);
-    
     obj.data.shelf_target = null;
   }
-  
   // no path and no shelf target
-  if(obj.active && path.length === 0 && !obj.data.shelf_target){
-    
+  if(obj.active && path.length === 0 && !obj.data.shelf_target){ 
     // map position of object
-    const pos1 = {
-        x: ( obj.x - map.sx ) / map.tile_size,
-        y: ( obj.y - map.sy ) / map.tile_size
-    };
-    
+    const pos1 = map.px_to_pos(obj.x, obj.y);
     // set a shelf tile
     const target = obj.data.shelf_target = map.getRandomByType( [3,4,5] );
-    
     // go to a floor tile near the shelf
     const floor_tile_options = map.get_border_tiles(target.x, target.y, [1] );
     const floor_tile = floor_tile_options[ Math.floor( Math.random() * floor_tile_options.length ) ];
-    
     map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
     .then((path_new)=>{
       obj.data.path = path_new;
     });
-    
   }
-  
-  
-
 };
 
 AI.customer = function(sm, obj){
   const path = obj.data.path;
   const map = sm.map;
-
   // if active and no path
   if(obj.active && path.length === 0){
-    const pos1 = {
-        x: (obj.x - map.sx) / map.tile_size,
-        y: (obj.y - map.sy) / map.tile_size
-    }
+    const pos1 = map.px_to_pos(obj.x, obj.y);
     const pos2 = map.getRandomByType([1]);
     map.getPath(pos2.x,pos2.y,pos1.x,pos1.y)
     .then((path_new)=>{
       obj.data.path = path_new;
     });
   }
-
 };
 
 /********* **********
@@ -1042,7 +1024,6 @@ StateMachine.spawn = function ( object_type='customer' ) {
   const sm = this;
   const type_count = sm.pool.get_data_count('type', object_type);
   if(type_count < conf.MAX_OBJECTS[object_type]){
-    //const obj = sm.pool.objects[0];
     const obj = sm.pool.get_inactive();
     if(obj){
       const map = sm.map;
@@ -1143,20 +1124,9 @@ StateMachine.states.boot = {
             tile.type_index = parseInt( part.slice(1, 3) );
           }
           if(part[0] === 'w'){
-             //const n = tile.data.count += 1;
              const item_index = parseInt( part.slice(1, 3) );
              const price_index = parseInt( part.slice(3, 5) );
              sm.stock_item(tile, item_index, price_index);
-             /*
-             const item = conf.items[ item_index ];
-             tile.type_index = n > 0 ? 4 : tile.type_index;
-             tile.type_index = n >= 50 ? 5 : tile.type_index;
-             tile.data.items.push({
-                item_index: item_index,
-                desc: item.desc,
-                price: conf.price_options[ price_index ]
-             });
-             */
           }
         });
       }
