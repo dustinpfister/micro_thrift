@@ -15,5 +15,13 @@
 * have a map.get\_border\_tiles method with include\_types option
 * have 'worker' type objects stock items
 * have 'customer' type objects buy items
-* (pending) - worker AI: basic probability system for item generation
-* (pending) - customer AI : basic probability system for buying an item
+* have screen centered and scaled using css
+* (pending) - worker AI: very basic probability system for item generation
+* (pending) - customer AI : very basic probability system for buying an item
+* (pending) - start a button class
+* (pending) - start a menu state
+* (pending) - start a save manager state
+* (pending) - Simg assets for menu, and save manager states
+* (pending) - tile edit menu in floor state
+* (pending) - start an options state with quit to menu, and continue options
+
