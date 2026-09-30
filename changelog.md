@@ -31,6 +31,8 @@
 * (pending) - start a save manager state
 * (pending) - Simg assets for menu, and save manager states
 * (pending) - start an options state with quit to menu, and continue options
+* (pending) - simple tile edit menu in floor state using buttons
+* (pending) - editing the map should cost money
 
 ## R0 () - Very basic core idea of the game started
 * starting out with the code that I worked out at jsFiddle
@@ -48,7 +50,6 @@
 * common AI.move method for all object types
 * common AI.target\_task method to find, create path to, and run custom logic when it range of a target tile
 * worker AI: very basic probability system for item generation
-* (pending) - simple tile edit menu in floor state
 * (pending) - display %full in floor state
 
 

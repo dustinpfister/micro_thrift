@@ -25,7 +25,7 @@ const conf = {};
 // max number of display objects used for sm.pool
 conf.MAX_OBJECTS = {
   worker: 3,
-  customer: 2
+  customer: 1
 };
 conf.MAX_SHELF_ITEMS = 10;
 conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.worker + conf.MAX_OBJECTS.customer;
@@ -1083,6 +1083,24 @@ StateMachine.is_shelf = function(tile){
   });
 };
 
+StateMachine.get_percent_full = function(){
+  const sm = this, map = sm.map;
+  let i = map.grid.length;
+  let shelfs = 0, items=0;
+  while(i--){
+    const tile = map.grid[i];
+    if(sm.is_shelf(tile)){
+      shelfs += 1;
+      items += tile.data.items.length;
+    }
+  }
+  return {
+    shelfs: shelfs,
+    items: items,
+    per: items / ( shelfs * conf.MAX_SHELF_ITEMS  )
+  };
+};
+
 StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
   if( !(StateMachine.is_shelf(tile)) ){
     console.warn('can only stock at a shelf tile!');
@@ -1204,6 +1222,9 @@ StateMachine.states.floor = {
      
      if(!tile){
        console.log('non map area clicked at : ' + x + ',' + y);
+       
+       
+       
      }
      
   },
@@ -1232,6 +1253,15 @@ StateMachine.states.floor = {
     ctx.textBaseline = 'top';
     ctx.font = '15px monospace';
     ctx.fillText(sm.format_money( sm.money ), 10, 10);
+    
+    ctx.font = '10px monospace';
+    ctx.fillText('%FULL: ', 10, 420);
+    const full = sm.get_percent_full();
+    ctx.fillStyle = '#afafaf';
+    ctx.fillRect(24 * 2 + 10, 420, 120, 10);
+    ctx.fillStyle = '#00af00';
+    ctx.fillRect(24 * 2 + 10, 420, 120 * full.per, 10);
+    
   }
 
 };
