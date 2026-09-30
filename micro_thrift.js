@@ -942,11 +942,30 @@ AI.move = (sm, obj) => {
     obj.y = map.sy + pos.y * map.tile_size;
   }
 };
-
+// find or move to a target tile, run custom callback when in range
+AI.target_task = (sm, obj, target_types = [3,4,5], call_back=function(){} ) => {
+  const map = sm.map, path = obj.data.path;
+  // acvive, no path, but WE DO have a target
+  if(obj.active && path.length === 0 && obj.data.shelf_target){
+    call_back(obj, obj.data.shelf_target);
+  }
+  // active, no path, and no target
+  if(obj.active && path.length === 0 && !obj.data.shelf_target){
+    const pos1 = map.px_to_pos(obj.x, obj.y);
+    const target = obj.data.shelf_target = map.getRandomByType( target_types );
+    const floor_tile_options = map.get_border_tiles(target.x, target.y, [1] );
+    const floor_tile = floor_tile_options[ Math.floor( Math.random() * floor_tile_options.length ) ];    
+    map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
+    .then((path_new)=>{
+      obj.data.path = path_new;
+    });
+  }
+};
 /********* **********
   6.1) Main AI
 ********** *********/
 AI.main = function( sm, obj ){
+  // always move if there is path data
   AI.move(sm, obj);
   // run script for current type
   AI[obj.data.type](sm, obj);
@@ -957,26 +976,11 @@ AI.main = function( sm, obj ){
 AI.worker = function(sm, obj){
   const path = obj.data.path, 
   map = sm.map;
-  // no path but we do have a shelf target
-  if(obj.active && path.length === 0 && obj.data.shelf_target){
-    const target = obj.data.shelf_target;
+  // target task for worker
+  AI.target_task(sm, obj, [3,4,5], function(obj, target){
     StateMachine.stock_item(target, 0, 0);
     obj.data.shelf_target = null;
-  }
-  // no path and no shelf target
-  if(obj.active && path.length === 0 && !obj.data.shelf_target){ 
-    // map position of object
-    const pos1 = map.px_to_pos(obj.x, obj.y);
-    // set a shelf tile
-    const target = obj.data.shelf_target = map.getRandomByType( [3,4,5] );
-    // go to a floor tile near the shelf
-    const floor_tile_options = map.get_border_tiles(target.x, target.y, [1] );
-    const floor_tile = floor_tile_options[ Math.floor( Math.random() * floor_tile_options.length ) ];
-    map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
-    .then((path_new)=>{
-      obj.data.path = path_new;
-    });
-  }
+  });
 };
 /********* **********
   6.3) customer AI
@@ -984,15 +988,12 @@ AI.worker = function(sm, obj){
 AI.customer = function(sm, obj){
   const path = obj.data.path;
   const map = sm.map;
-  // active, no path, but DO have a target
-  if(obj.active && path.length === 0 && obj.data.shelf_target){
-    const target = obj.data.shelf_target;
+  // target task for customer
+  AI.target_task(sm, obj, [3,4,5], function(obj, target){
     const items = target.data.items;
     if(items.length > 0){
-       
        const n = target.data.count = target.data.count -= 1;
        const buying = items.pop();
-
        target.type_index = 3;
        target.type_index = n > 0 ? 4 : target.type_index;
        target.type_index = n >= 5 ? 5 : target.type_index;
@@ -1000,22 +1001,9 @@ AI.customer = function(sm, obj){
        // buying the item
        sm.money += buying.price;
        sm.money = parseFloat( sm.money.toFixed(2) )
-       console.log(sm.money);
-
     }
     obj.data.shelf_target = null;
-  }
-  // active, no path, and no target
-  if(obj.active && path.length === 0 && !obj.data.shelf_target){
-    const pos1 = map.px_to_pos(obj.x, obj.y);
-    const target = obj.data.shelf_target = map.getRandomByType( [3,4,5] );
-    const floor_tile_options = map.get_border_tiles(target.x, target.y, [1] );
-    const floor_tile = floor_tile_options[ Math.floor( Math.random() * floor_tile_options.length ) ];    
-    map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
-    .then((path_new)=>{
-      obj.data.path = path_new;
-    });
-  }
+  });
 };
 
 /********* **********

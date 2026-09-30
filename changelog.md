@@ -16,6 +16,8 @@
 * have 'worker' type objects stock items
 * have 'customer' type objects buy items
 * have screen centered and scaled using css
+* common AI.move method for all object types
+* common AI.target\_task method to find, create path to, and run custom logic when it range of a target tile
 * (pending) - worker AI: very basic probability system for item generation
 * (pending) - customer AI : very basic probability system for buying an item
 * (pending) - start a button class
