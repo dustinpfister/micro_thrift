@@ -9,6 +9,9 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 4.0) Pathfinder    - Path finding based on EasyStar
 5.0) WMap          - A world Map system
 6.0) AI            - Artificial intelligence of sm.pool objects
+  6.1) main AI     - main AI script that applies to all objects
+  6.2) worker AI   - worker AI script 
+  6.3) customer AI - customer AI script
 7.0) StateMachine  - The State Machine of the game
   7.1) boot state  - sets up the map, and other aspects of the game state
   7.2) floor state - shows the current state of the 'floor' of the thrift store
@@ -929,8 +932,8 @@ class WMap {
   6.0) AI
 ********** *********/
 const AI = {}
-
-AI.main = function( sm, obj ){
+// move if there is path data
+AI.move = (sm, obj) => {
   const path = obj.data.path;
   const map = sm.map;
   if(obj.active && path.length > 0){
@@ -938,10 +941,19 @@ AI.main = function( sm, obj ){
     obj.x = map.sx + pos.x * map.tile_size;
     obj.y = map.sy + pos.y * map.tile_size;
   }
+};
+
+/********* **********
+  6.1) Main AI
+********** *********/
+AI.main = function( sm, obj ){
+  AI.move(sm, obj);
   // run script for current type
   AI[obj.data.type](sm, obj);
 };
-
+/********* **********
+  6.2) Worker AI
+********** *********/
 AI.worker = function(sm, obj){
   const path = obj.data.path, 
   map = sm.map;
@@ -966,7 +978,9 @@ AI.worker = function(sm, obj){
     });
   }
 };
-
+/********* **********
+  6.3) customer AI
+********** *********/
 AI.customer = function(sm, obj){
   const path = obj.data.path;
   const map = sm.map;
