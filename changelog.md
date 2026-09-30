@@ -14,6 +14,6 @@
 * started a main AI object for scripts that effect worker and customer actions
 * have a map.get\_border\_tiles method with include\_types option
 * have 'worker' type objects stock items
-* (pending) - have 'customer' type objects buy items
+* have 'customer' type objects buy items
 * (pending) - worker AI: basic probability system for item generation
 * (pending) - customer AI : basic probability system for buying an item

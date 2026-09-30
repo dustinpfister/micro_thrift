@@ -21,11 +21,11 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 const conf = {};
 // max number of display objects used for sm.pool
 conf.MAX_OBJECTS = {
-  worker: 1,
-  customer: 3
+  worker: 2,
+  customer: 5
 };
 conf.MAX_SHELF_ITEMS = 10;
-conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.woker + conf.MAX_OBJECTS.customer.total;
+conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.worker + conf.MAX_OBJECTS.customer;
 conf.price_options = [ // price options 0-29
   0.05, 0.10, 0.25, 0.50, 0.75,   1,   2,   3,   4,   5, 
      6,    7,    8,    9,   10,  12,  15,  20,  50,  75, 
@@ -975,8 +975,19 @@ AI.customer = function(sm, obj){
     const target = obj.data.shelf_target;
     const items = target.data.items;
     if(items.length > 0){
-       console.log('what do we have here?');
-       console.log(items);
+       
+       const n = target.data.count = target.data.count -= 1;
+       const buying = items.pop();
+
+       target.type_index = 3;
+       target.type_index = n > 0 ? 4 : target.type_index;
+       target.type_index = n >= 5 ? 5 : target.type_index;
+       target.frame_index = target.type_index - 3;
+       // buying the item
+       sm.money += buying.price;
+       sm.money = parseFloat( sm.money.toFixed(2) )
+       console.log(sm.money);
+
     }
     obj.data.shelf_target = null;
   }
@@ -1020,13 +1031,19 @@ StateMachine.render = function(ctx, canvas){
     ctx.fillStyle = 'black';
     ctx.fillRect(0,0, canvas.width, canvas.height);
     state.render.call(sm, sm, ctx, canvas);
+};
 
+StateMachine.format_money = function(amount=0.00, digits=13){
+  return '$' + String( amount.toFixed(2) ).padStart(digits, '-')
 };
 
 StateMachine.pointer = function (e) {
-  const bx = e.target.getBoundingClientRect()
-  const x = e.clientX - bx.left;
-  const y = e.clientY - bx.top;
+  const canvas = e.target;
+  const bx = canvas.getBoundingClientRect()
+  const scaleX = canvas.width / bx.width;
+  const scaleY = canvas.height / bx.height;
+  const x = (e.clientX - bx.left) * scaleX;
+  const y = (e.clientY - bx.top) * scaleY;
   const sm = this, state = sm.current;
   state.pointer.call(sm, sm, x, y, e)
 };
@@ -1088,13 +1105,15 @@ StateMachine.states.boot = {
 
   init: function(sm) {
   
+    sm.money = 0.00;
+
     sm.pool = new ObjPool({
       count: conf.MAX_OBJECTS.total, w: 24, h: 24, sheets:[simg_pool_customer, simg_pool_worker]
     });
     
     sm.map = new WMap({
       width: 16, height: 16,
-      sx: 10, sy: 10,
+      sx: 10, sy: 30,
       default_type: 1,
       sheets: [simg_tiles_null, simg_tiles_stock],
       type_index: [
@@ -1185,6 +1204,10 @@ StateMachine.states.floor = {
   render: function(sm, ctx, canvas) {
     sm.map.render_grid(ctx);
     sm.pool.render(ctx);
+    ctx.fillStyle = 'white';
+    ctx.textBaseline = 'top';
+    ctx.font = '15px monospace';
+    ctx.fillText(sm.format_money( sm.money ), 10, 10);
   }
 
 };
@@ -1214,7 +1237,9 @@ const loop = () => {
     StateMachine.render(ctx, canvas);
   }
 };
+
 StateMachine.set_state('boot');
+
 loop();
 
 
