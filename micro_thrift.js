@@ -24,8 +24,8 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 const conf = {};
 // max number of display objects used for sm.pool
 conf.MAX_OBJECTS = {
-  worker: 2,
-  customer: 5
+  worker: 3,
+  customer: 2
 };
 conf.MAX_SHELF_ITEMS = 10;
 conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.worker + conf.MAX_OBJECTS.customer;
@@ -1053,8 +1053,8 @@ StateMachine.pointer = function (e) {
   const bx = canvas.getBoundingClientRect()
   const scaleX = canvas.width / bx.width;
   const scaleY = canvas.height / bx.height;
-  const x = (e.clientX - bx.left) * scaleX;
-  const y = (e.clientY - bx.top) * scaleY;
+  const x = Math.floor( (e.clientX - bx.left) * scaleX );
+  const y = Math.floor( (e.clientY - bx.top) * scaleY );
   const sm = this, state = sm.current;
   state.pointer.call(sm, sm, x, y, e)
 };
@@ -1191,8 +1191,21 @@ StateMachine.states.boot = {
 StateMachine.states.floor = {
 
   pointer : function(sm, x, y, e) {
-     console.log(sm.current_key + 'pointer: ');
-     console.log( sm.map.getByPX(x, y));
+     console.log('');
+     
+     const tile = sm.map.getByPX(x, y);
+     if( tile ){
+       console.log('clicked tile: ');
+       console.log('pos: ' + tile.x + ',' + tile.y + ' ( i ' + tile.i + ')' );
+       tile.data.items.forEach(((item)=>{
+         console.log('  ' + item.desc + ' $' +item.price);
+       }));
+     }
+     
+     if(!tile){
+       console.log('non map area clicked at : ' + x + ',' + y);
+     }
+     
   },
 
   init: function(sm) {},
