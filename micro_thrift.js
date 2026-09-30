@@ -978,7 +978,16 @@ AI.worker = function(sm, obj){
   map = sm.map;
   // target task for worker
   AI.target_task(sm, obj, [3,4,5], function(obj, target){
-    StateMachine.stock_item(target, 0, 0);
+    // !!!R0 : just basic random selection for now
+    const item_index = Math.floor( conf.items.length * Math.random() );
+    const item_gen = conf.items[ item_index ];
+  
+    // !!!R0 : pricing items by value_index +- 3 randomly
+    let price_index = item_gen.value_index - 3 + Math.round( Math.random() * 6 );
+    price_index  = price_index < 0 ? 0 : price_index;
+    price_index = price_index >= conf.price_options.length ? conf.price_options.length - 1 : price_index; 
+  
+    StateMachine.stock_item(target, item_index, price_index);
     obj.data.shelf_target = null;
   });
 };
