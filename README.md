@@ -1,3 +1,3 @@
 # micro_thrift
 
-Micro thrift is simulation of a thrift store on a micro scale of sorts. 
+Micro thrift aims to be a simulation of a thrift store including customers, workers, and items on a sales floor.
