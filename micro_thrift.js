@@ -219,7 +219,20 @@ const simg_buttons = new SImg( {
     0,0,0,0,2,2,2,0,0,2,2,2,0,0,0,0,
     0,0,0,2,2,2,2,0,0,2,2,2,2,0,0,0,
     0,0,0,0,0,2,2,0,0,2,2,0,0,0,0,0
-  ] } );
+  ]});
+
+const simg_buttons_options = new SImg( {
+  width: 32, frame_width: 16, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
+  px: [
+    3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+    3,2,2,2,2,2,2,2,2,2,2,2,2,1,1,3,  3,1,1,1,2,2,2,2,2,2,2,2,1,1,1,3,
+    3,2,2,1,2,2,2,2,2,2,2,2,2,1,1,3,  3,2,2,2,1,1,1,2,2,1,1,1,2,2,2,3,
+    3,2,1,1,2,2,2,2,2,2,2,2,2,1,1,3,  3,2,2,2,2,2,2,1,1,2,2,2,2,2,2,3,
+    3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,  3,2,2,2,2,2,2,1,1,2,2,2,2,2,2,3,
+    3,2,1,1,2,2,2,2,2,2,2,2,2,2,2,3,  3,2,2,2,1,1,1,2,2,1,1,1,2,2,2,3,
+    3,2,2,1,2,2,2,2,2,2,2,2,2,2,2,3,  3,1,1,1,2,2,2,2,2,2,2,2,1,1,1,3,
+    3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+  ]});
 
 /********* **********
   3.0) ObjPool CLASS
@@ -1417,16 +1430,16 @@ StateMachine.states.options = {
     const canvas = sm.canvas;
 
     sm.button_continue = sm.button_continue || new Button({
-      x: canvas.width / 2 - 256 * 1.10, y: canvas.height / 2, w: 256,  h:64,
-      //simg: simg_buttons, frame_index: 0,
+      x: canvas.width / 2 - 128 * 1.10, y: canvas.height / 2, w: 128,  h:64,
+      simg: simg_buttons_options, frame_index: 0,
       on_click : function(button, x, y){
         sm.set_state('floor');
       }
     });
     
     sm.button_main_menu = sm.button_main_menu || new Button({
-      x: canvas.width / 2 + 256 * 0.10, y: canvas.height / 2, w: 256,  h:64,
-      //simg: simg_buttons, frame_index: 0,
+      x: canvas.width / 2 + 128 * 0.10, y: canvas.height / 2, w: 128,  h:64,
+      simg: simg_buttons_options, frame_index: 1,
       on_click : function(button, x, y){
         sm.set_state('main_menu');
       }
