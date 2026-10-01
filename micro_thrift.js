@@ -21,7 +21,9 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 /********* **********
   1.0) Config
 ********** *********/
-const conf = {};
+const conf = {
+  R: 0
+};
 // max number of display objects used for sm.pool
 conf.MAX_OBJECTS = {
   worker: 3,
@@ -1037,13 +1039,6 @@ StateMachine.update = function(t=0){
     this.current.update.call(this, this, t);
 };
 
-StateMachine.render = function(ctx, canvas){
-    const sm = this, state = sm.current;
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0,0, canvas.width, canvas.height);
-    state.render.call(sm, sm, ctx, canvas);
-};
-
 StateMachine.format_money = function(amount=0.00, digits=13){
   return '$' + String( amount.toFixed(2) ).padStart(digits, '-')
 };
@@ -1057,6 +1052,20 @@ StateMachine.pointer = function (e) {
   const y = Math.floor( (e.clientY - bx.top) * scaleY );
   const sm = this, state = sm.current;
   state.pointer.call(sm, sm, x, y, e)
+};
+
+StateMachine.render = function(ctx, canvas){
+  const sm = this, state = sm.current;
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0,0, canvas.width, canvas.height);
+  state.render.call(sm, sm, ctx, canvas);
+};
+
+StateMachine.render_revision_string = function(ctx, x, y){
+  ctx.fillStyle = 'white';
+  ctx.textBaseline = 'top';
+  ctx.font = '7px monospace';
+  ctx.fillText('MicroThrift Rev:' + conf.R, x, y );
 };
 
 // spawn an object_type for sm.pool
@@ -1261,6 +1270,8 @@ StateMachine.states.floor = {
     ctx.fillRect(24 * 2 + 10, 420, 120, 10);
     ctx.fillStyle = '#00af00';
     ctx.fillRect(24 * 2 + 10, 420, 120 * full.per, 10);
+    
+    sm.render_revision_string(ctx, 10, canvas.height - 12 );
     
   }
 
