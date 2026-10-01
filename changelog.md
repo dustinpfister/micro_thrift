@@ -27,12 +27,14 @@
 
 ## R1 () - Button Class, main menu, save manager, and options states
 * start a button class
+* Simg assets for Buttons in general
 * (pending) - start a main menu state
-* (pending) - start a save manager state
 * (pending) - Simg assets for menu, and save manager states
 * (pending) - start an options state with quit to menu, and continue options
+* (pending) - start a save manager state
 * (pending) - simple tile edit menu in floor state using buttons
 * (pending) - editing the map should cost money
+* (pending) - common conf.palette used for all SImg assets
 
 ## R0 ( done 09/01/2026 ) - Very basic core idea of the game started
 * starting out with the code that I worked out at jsFiddle

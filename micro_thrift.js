@@ -5,6 +5,7 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 -2.0 SImg            - Allows for storing image assets in source
   -2.1 tile_assets   - SImg assets used to tile the WMap instance
   -2.2 pool_assets   - SImg assets used to skin ObjPool objects
+  -2.3 button_assets - Simg assets used to skin buttons
 -3.0 ObjPool         - An Object pool class used for sprite objects
 -4.0 Pathfinder      - Path finding based on EasyStar
 -5.0 WMap            - A world Map system
@@ -192,6 +193,29 @@ const simg_pool_worker = new SImg( {
     7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
     7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
     7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
+  ] } );
+/********* **********
+  2.3) button_assets
+********** *********/
+const simg_buttons = new SImg( {
+  width: 16, frame_width: 16, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
+  px: [
+    0,0,0,0,0,2,2,0,0,2,2,0,0,0,0,0,
+    0,0,0,2,2,2,2,0,0,2,2,2,2,0,0,0,
+    0,0,0,0,2,2,2,0,0,2,2,2,0,0,0,0,
+    0,2,0,0,0,2,2,2,2,2,2,0,0,0,2,0,
+    0,2,2,0,2,2,2,2,2,2,2,2,0,2,2,0,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,
+    0,0,0,2,2,2,0,0,0,0,2,2,2,0,0,0,
+    0,0,0,2,2,2,0,0,0,0,2,2,2,0,0,0,
+    2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    0,2,2,0,2,2,2,2,2,2,2,2,0,2,2,0,
+    0,2,0,0,0,2,2,2,2,2,2,0,0,0,2,0,
+    0,0,0,0,2,2,2,0,0,2,2,2,0,0,0,0,
+    0,0,0,2,2,2,2,0,0,2,2,2,2,0,0,0,
+    0,0,0,0,0,2,2,0,0,2,2,0,0,0,0,0
   ] } );
 
 /********* **********
@@ -1032,7 +1056,9 @@ class Button {
 
   constructor (opt={}) {
      Object.assign(this, {
-       x:0, y:0, w: 128, h: 32, on_click: function(){}
+       x:0, y:0, w: 128, h: 32, 
+       simg: null, frame_index: 0,
+       on_click: function(){}
      }, opt);
   }
   
@@ -1043,8 +1069,18 @@ class Button {
   }
   
   render (ctx) {
-     ctx.fillStyle = 'white';
-     ctx.fillRect(this.x, this.y, this.w, this.h);
+  
+    if(!this.simg){
+      ctx.fillStyle = 'white';
+      ctx.fillRect(this.x, this.y, this.w, this.h);
+    }
+     
+    if(this.simg){
+      this.simg.render_frame(ctx, 
+        Math.floor(this.frame_index || 0), 
+        this.x, this.y, this.w, this.h
+      );
+    }
   }
   
   
@@ -1279,6 +1315,7 @@ StateMachine.states.floor = {
 
     sm.button_options = new Button({
       x: canvas.width - 64, y: 32, w: 32,  h:32,
+      simg: simg_buttons, frame_index: 0,
       on_click : function(button, x, y){
         console.log(button)
       }
