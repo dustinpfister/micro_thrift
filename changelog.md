@@ -29,11 +29,10 @@
 * start a button class
 * Simg assets for Buttons in general
 * start a main menu state
-* (pending) - start an options state with quit to menu, and continue options
-* (pending) - Simg assets for menu, and save manager states
+* start an options state with quit to menu, and continue options
+* (pending) - Simg asset for main menu title
 * (pending) - start a save manager state
 * (pending) - simple tile edit menu in floor state using buttons
-* (pending) - editing the map should cost money
 * (pending) - common conf.palette used for all SImg assets
 
 ## R0 ( done 09/01/2026 ) - Very basic core idea of the game started

@@ -1407,11 +1407,40 @@ StateMachine.states.floor = {
 ********** *********/
 StateMachine.states.options = {
   pointer : function(sm, x, y, e) {
-    StateMachine.set_state('floor');
+  
+    sm.button_continue.click_check( x, y );
+    sm.button_main_menu.click_check( x, y );
+  
   },
-  init: function(sm) {},
+  init: function(sm) {
+  
+    const canvas = sm.canvas;
+
+    sm.button_continue = sm.button_continue || new Button({
+      x: canvas.width / 2 - 256 * 1.10, y: canvas.height / 2, w: 256,  h:64,
+      //simg: simg_buttons, frame_index: 0,
+      on_click : function(button, x, y){
+        sm.set_state('floor');
+      }
+    });
+    
+    sm.button_main_menu = sm.button_main_menu || new Button({
+      x: canvas.width / 2 + 256 * 0.10, y: canvas.height / 2, w: 256,  h:64,
+      //simg: simg_buttons, frame_index: 0,
+      on_click : function(button, x, y){
+        sm.set_state('main_menu');
+      }
+    });
+  
+  },
   update: function(sm, t) {},
-  render: function(sm, ctx, canvas) {}
+  render: function(sm, ctx, canvas) {
+  
+    sm.button_continue.render(ctx);
+    sm.button_main_menu.render(ctx);
+    
+    
+  }
 };
 
 /********* **********
