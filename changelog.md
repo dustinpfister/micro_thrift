@@ -32,8 +32,17 @@
 * start an options state with quit to menu, and continue options
 * have a StateMachine.load_save method
 * (pending) - have a StateMachine.create_save method
-* (pending) - Simg asset for main menu title
+
 * (pending) - start a save manager state
+* (pending) - have a sm.save\_slots object with an auto key, and 3 numbered slots
+* (pending) - in the boot state check for local storage and if there load sm save slots data
+* (pending) - in the floor state keep saving to sm.save\_slots.auto
+* (pending) - in save manager can copy from one slot to another
+* (pending) - in save manager can delete any slot
+* (pending) - in save manager can play any slot
+* (pending) - in main menu if there is an auto save display a continue button
+
+* (pending) - Simg asset for main menu title
 * (pending) - simple tile edit menu in floor state using buttons
 * (pending) - common conf.palette used for all SImg assets
 
