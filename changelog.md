@@ -25,9 +25,9 @@
 * (pending) - customer AI : choice of buying an item or not based on personal pref set on spawn
 * (pending) - customers will leave map after making buying an item, or after a timeout
 
-## R1 () - Button Class, menu, save manager, and options states
-* (pending) - start a button class
-* (pending) - start a menu state
+## R1 () - Button Class, main menu, save manager, and options states
+* start a button class
+* (pending) - start a main menu state
 * (pending) - start a save manager state
 * (pending) - Simg assets for menu, and save manager states
 * (pending) - start an options state with quit to menu, and continue options

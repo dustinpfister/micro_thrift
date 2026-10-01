@@ -1,28 +1,29 @@
 /********* **********
 Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 
-1.0) Conf          - a config object containing constants used throughout the codebase
-2.0) SImg Class    - Allows for storing image assets in source
-  2.1) tile_assets - SImg assets used to tile the WMap instance
-  2.2) pool_assets - SImg assets used to skin ObjPool objects
-3.0) ObjPool CLASS - An Object pool class used for sprite objects
-4.0) Pathfinder    - Path finding based on EasyStar
-5.0) WMap          - A world Map system
-6.0) AI            - Artificial intelligence of sm.pool objects
-  6.1) main AI     - main AI script that applies to all objects
-  6.2) worker AI   - worker AI script 
-  6.3) customer AI - customer AI script
-7.0) StateMachine  - The State Machine of the game
-  7.1) boot state  - sets up the map, and other aspects of the game state
-  7.2) floor state - shows the current state of the 'floor' of the thrift store
-8.0) App loop      - Main application loop of the game
+-1.0 Conf            - a config object containing constants used throughout the codebase
+-2.0 SImg            - Allows for storing image assets in source
+  -2.1 tile_assets   - SImg assets used to tile the WMap instance
+  -2.2 pool_assets   - SImg assets used to skin ObjPool objects
+-3.0 ObjPool         - An Object pool class used for sprite objects
+-4.0 Pathfinder      - Path finding based on EasyStar
+-5.0 WMap            - A world Map system
+-6.0 AI              - Artificial intelligence of sm.pool objects
+  -6.1 main          - main AI script that applies to all objects
+  -6.2 worker        - worker AI script 
+  -6.3 customer      - customer AI script
+-7.0 Button          - A Button class used for menus
+-8.0 StateMachine    - The State Machine of the game
+  -8.1 boot          - sets up the map, and other aspects of the game state
+  -8.2 floor         - shows the current state of the 'floor' of the thrift store
+-9.0 App loop        - Main application loop of the game
 
 ********** *********/
 /********* **********
   1.0) Config
 ********** *********/
 const conf = {
-  R: 0
+  R: '1B'
 };
 // max number of display objects used for sm.pool
 conf.MAX_OBJECTS = {
@@ -1016,13 +1017,46 @@ AI.customer = function(sm, obj){
     obj.data.shelf_target = null;
   });
 };
-
 /********* **********
-  7.0) StateMachine
+  7.0) Button
+********** *********/
+const bounding_box = function(a={}, b={}) {
+    return !(
+      a.y + a.h < b.y ||
+      a.y > b.y + b.h ||
+      a.x + a.w < b.x ||
+      a.x > b.x + b.w)
+};
+
+class Button {
+
+  constructor (opt={}) {
+     Object.assign(this, {
+       x:0, y:0, w: 128, h: 32, on_click: function(){}
+     }, opt);
+  }
+  
+  click_check (x=-1, y=-1) {
+    if( bounding_box(this, {x: x, y: y, w: 1, y: 1}) ){
+      this.on_click(this, x, y);   
+    }
+  }
+  
+  render (ctx) {
+     ctx.fillStyle = 'white';
+     ctx.fillRect(this.x, this.y, this.w, this.h);
+  }
+  
+  
+}
+/********* **********
+  8.0) StateMachine
 ********** *********/
 const StateMachine = {
     current_key: 'boot',
     current: null,
+    canvas: null,
+    ctx: null,
     saves: {},
     states: {}
 };
@@ -1064,7 +1098,7 @@ StateMachine.render = function(ctx, canvas){
 StateMachine.render_revision_string = function(ctx, x, y){
   ctx.fillStyle = 'white';
   ctx.textBaseline = 'top';
-  ctx.font = '7px monospace';
+  ctx.font = '10px monospace';
   ctx.fillText('MicroThrift Rev:' + conf.R, x, y );
 };
 
@@ -1134,7 +1168,7 @@ StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
 };
 
 /********* **********
-  7.1) boot state
+  8.1) boot state
 ********** *********/
 StateMachine.states.boot = {
 
@@ -1212,7 +1246,7 @@ StateMachine.states.boot = {
 };
 
 /********* **********
-  7.2) floor State
+  8.2) floor State
 ********** *********/
 
 StateMachine.states.floor = {
@@ -1232,13 +1266,25 @@ StateMachine.states.floor = {
      if(!tile){
        console.log('non map area clicked at : ' + x + ',' + y);
        
+       sm.button_options.click_check( x, y );
        
        
      }
      
   },
 
-  init: function(sm) {},
+  init: function(sm) {
+  
+    const canvas = sm.canvas;
+
+    sm.button_options = new Button({
+      x: canvas.width - 64, y: 32, w: 32,  h:32,
+      on_click : function(button, x, y){
+        console.log(button)
+      }
+    });
+  
+  },
 
   update: function(sm, t) {
     const map = sm.map;
@@ -1271,17 +1317,19 @@ StateMachine.states.floor = {
     ctx.fillStyle = '#00af00';
     ctx.fillRect(24 * 2 + 10, 420, 120 * full.per, 10);
     
-    sm.render_revision_string(ctx, 10, canvas.height - 12 );
+    sm.button_options.render(ctx);
+    
+    sm.render_revision_string(ctx, 10, canvas.height - 15 );
     
   }
 
 };
 
 /********* **********
-  8.0) APP LOOP
+  9.0) APP LOOP
 ********** *********/
-const canvas = document.getElementById('the_canvas'); //document.createElement('canvas');
-const ctx = canvas.getContext('2d');
+const canvas = StateMachine.canvas = document.getElementById('the_canvas');
+const ctx = StateMachine.ctx = canvas.getContext('2d');
 canvas.width = 640;
 canvas.height = 480;
 
