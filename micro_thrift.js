@@ -29,6 +29,20 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 const conf = {
   R: '1B'
 };
+conf.SAVE_DEFAULT = {
+  money: 0,
+  map_data: {
+    17 : 'b03', 19 : 'b03', 33 : 'b03', 35 : 'b03',
+    65 : 'b03', 81 : 'b03',  97 : 'b03', 113 : 'b03', 129 : 'b03', 145 : 'b03',
+    67 : 'b03', 83 : 'b03',  99 : 'b03', 115 : 'b03', 131 : 'b03', 147 : 'b03',
+    69 : 'b03', 85 : 'b03', 101 : 'b03', 117 : 'b03', 133 : 'b03', 149 : 'b03',
+    73 : 'b03', 74 : 'b03', 75 : 'b03', 76 : 'b03', 77 : 'b03', 78 : 'b03',
+    105 : 'b03', 106 : 'b03', 107 : 'b03', 108 : 'b03', 109 : 'b03', 110 : 'b03',
+    137 : 'b03', 138 : 'b03', 139 : 'b03', 140 : 'b03', 141 : 'b03', 142 : 'b03',  
+    176: 'b02',177: 'b02',178: 'b02',179: 'b02',180: 'b02',181: 'b02',182: 'b02',
+    185: 'b02',186: 'b02',187: 'b02',188: 'b02',189: 'b02',190: 'b02',191: 'b02'
+  }
+};
 // max number of display objects used for sm.pool
 conf.MAX_OBJECTS = {
   worker: 3,
@@ -230,7 +244,7 @@ const simg_buttons_options = new SImg( {
     3,2,1,1,2,2,2,2,2,2,2,2,2,1,1,3,  3,2,2,2,2,2,2,1,1,2,2,2,2,2,2,3,
     3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,  3,2,2,2,2,2,2,1,1,2,2,2,2,2,2,3,
     3,2,1,1,2,2,2,2,2,2,2,2,2,2,2,3,  3,2,2,2,1,1,1,2,2,1,1,1,2,2,2,3,
-    3,2,2,1,2,2,2,2,2,2,2,2,2,2,2,3,  3,1,1,1,2,2,2,2,2,2,2,2,1,1,1,3,
+    3,2,2,1,2,2,2,2,2,2,2,2,2,2,2,3,  3,1,1,1,2,2,2,2,2,2,2,,1,1,1,3,
     3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
   ]});
 
@@ -1129,6 +1143,49 @@ StateMachine.format_money = function(amount=0.00, digits=13){
   return '$' + String( amount.toFixed(2) ).padStart(digits, '-')
 };
 
+StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
+  const sm = this;
+  sm.money = save_obj.money;
+  sm.map = new WMap({
+      width: 16, height: 16,
+      sx: 10, sy: 30,
+      default_type: 1,
+      sheets: [simg_tiles_null, simg_tiles_stock],
+      type_index: [
+        [0,0], // type 0, sheet 0, frame 0
+        [0,1], // floor tile
+        [0,2], // wall
+        [1,0], // empty shelf
+        [1,1], // half full
+        [1,2]  // full
+      ],
+      tile_size : 24,
+      walkables: [0, 1],
+      data: save_obj.map_data,
+      parse_data : (map, tData, tile, i) => {
+        tile.data.count = 0;
+        tile.data.items = [];
+        if(!tData){
+          return;
+        }
+        const parts = tData.match(/[a-zA-Z]\d+/g);
+        if(!parts){
+          return;
+        }
+        parts.forEach((part)=>{
+          if(part[0] === 'b'){
+            tile.type_index = parseInt( part.slice(1, 3) );
+          }
+          if(part[0] === 'w'){
+             const item_index = parseInt( part.slice(1, 3) );
+             const price_index = parseInt( part.slice(3, 5) );
+             sm.stock_item(tile, item_index, price_index);
+          }
+        });
+      }
+    });
+};
+
 StateMachine.pointer = function (e) {
   const canvas = e.target;
   const bx = canvas.getBoundingClientRect()
@@ -1229,63 +1286,11 @@ StateMachine.states.boot = {
 
   init: function(sm) {
   
-    sm.money = 0.00;
-
     sm.pool = new ObjPool({
       count: conf.MAX_OBJECTS.total, w: 24, h: 24, sheets:[simg_pool_customer, simg_pool_worker]
     });
     
-    sm.map = new WMap({
-      width: 16, height: 16,
-      sx: 10, sy: 30,
-      default_type: 1,
-      sheets: [simg_tiles_null, simg_tiles_stock],
-      type_index: [
-        [0,0], // type 0, sheet 0, frame 0
-        [0,1], // floor tile
-        [0,2], // wall
-        [1,0], // empty shelf
-        [1,1], // half full
-        [1,2]  // full
-      ],
-      tile_size : 24,
-      walkables: [0, 1],
-      data: {
-        17 : 'b03', 19 : 'b03', 33 : 'b03', 35 : 'b03',
-        
-        65 : 'b03', 81 : 'b03',  97 : 'b03', 113 : 'b03', 129 : 'b03', 145 : 'b03',
-        67 : 'b03', 83 : 'b03',  99 : 'b03', 115 : 'b03', 131 : 'b03', 147 : 'b03',
-        69 : 'b03', 85 : 'b03', 101 : 'b03', 117 : 'b03', 133 : 'b03', 149 : 'b03',
-        
-        73 : 'b03', 74 : 'b03', 75 : 'b03', 76 : 'b03', 77 : 'b03', 78 : 'b03',
-        105 : 'b03', 106 : 'b03', 107 : 'b03', 108 : 'b03', 109 : 'b03', 110 : 'b03',
-        137 : 'b03', 138 : 'b03', 139 : 'b03', 140 : 'b03', 141 : 'b03', 142 : 'b03',
-        
-        176: 'b02',177: 'b02',178: 'b02',179: 'b02',180: 'b02',181: 'b02',182: 'b02',
-        185: 'b02',186: 'b02',187: 'b02',188: 'b02',189: 'b02',190: 'b02',191: 'b02'
-      },
-      parse_data : (map, tData, tile, i) => {
-        tile.data.count = 0;
-        tile.data.items = [];
-        if(!tData){
-          return;
-        }
-        const parts = tData.match(/[a-zA-Z]\d+/g);
-        if(!parts){
-          return;
-        }
-        parts.forEach((part)=>{
-          if(part[0] === 'b'){
-            tile.type_index = parseInt( part.slice(1, 3) );
-          }
-          if(part[0] === 'w'){
-             const item_index = parseInt( part.slice(1, 3) );
-             const price_index = parseInt( part.slice(3, 5) );
-             sm.stock_item(tile, item_index, price_index);
-          }
-        });
-      }
-    });
+    sm.load_save();
 
     StateMachine.set_state('floor');
     //StateMachine.set_state('main_menu');
@@ -1311,7 +1316,8 @@ StateMachine.states.main_menu = {
       x: canvas.width / 2 - 128, y: canvas.height / 2, w: 256,  h:64,
       //simg: simg_buttons, frame_index: 0,
       on_click : function(button, x, y){
-        //console.log(x, y)
+        //console.log(x, y);
+        sm.load_save();
         sm.set_state('floor');
       }
     });

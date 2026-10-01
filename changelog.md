@@ -30,6 +30,8 @@
 * Simg assets for Buttons in general
 * start a main menu state
 * start an options state with quit to menu, and continue options
+* have a StateMachine.load_save method
+* (pending) - have a StateMachine.create_save method
 * (pending) - Simg asset for main menu title
 * (pending) - start a save manager state
 * (pending) - simple tile edit menu in floor state using buttons
