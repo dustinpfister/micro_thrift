@@ -28,9 +28,9 @@
 ## R1 () - Button Class, main menu, save manager, and options states
 * start a button class
 * Simg assets for Buttons in general
-* (pending) - start a main menu state
-* (pending) - Simg assets for menu, and save manager states
+* start a main menu state
 * (pending) - start an options state with quit to menu, and continue options
+* (pending) - Simg assets for menu, and save manager states
 * (pending) - start a save manager state
 * (pending) - simple tile edit menu in floor state using buttons
 * (pending) - editing the map should cost money

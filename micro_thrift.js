@@ -16,7 +16,10 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 -7.0 Button          - A Button class used for menus
 -8.0 StateMachine    - The State Machine of the game
   -8.1 boot          - sets up the map, and other aspects of the game state
-  -8.2 floor         - shows the current state of the 'floor' of the thrift store
+  -8.2 main_menu     - the main menu / title state
+  -8.3 save_manager  - the save manager state
+  -8.4 floor         - shows the current state of the 'floor' of the thrift store
+  -8.5 options state - options or pause state
 -9.0 App loop        - Main application loop of the game
 
 ********** *********/
@@ -1049,7 +1052,7 @@ const bounding_box = function(a={}, b={}) {
       a.y + a.h < b.y ||
       a.y > b.y + b.h ||
       a.x + a.w < b.x ||
-      a.x > b.x + b.w)
+      a.x > b.x + b.w )
 };
 
 class Button {
@@ -1063,13 +1066,12 @@ class Button {
   }
   
   click_check (x=-1, y=-1) {
-    if( bounding_box(this, {x: x, y: y, w: 1, y: 1}) ){
+    if( bounding_box(this, {x: x, y: y, w: 1, h: 1}) ){
       this.on_click(this, x, y);   
     }
   }
   
   render (ctx) {
-  
     if(!this.simg){
       ctx.fillStyle = 'white';
       ctx.fillRect(this.x, this.y, this.w, this.h);
@@ -1100,6 +1102,7 @@ const StateMachine = {
 StateMachine.set_state = function (key='boot') {
     const sm = this;
     sm.current_key = key;
+    console.log('set state to: ' + key);
     const state = sm.current = sm.states[sm.current_key];
     state.init.call(sm, sm);
     state.update.call(sm, sm, 0);
@@ -1272,6 +1275,7 @@ StateMachine.states.boot = {
     });
 
     StateMachine.set_state('floor');
+    //StateMachine.set_state('main_menu');
     
   },
 
@@ -1282,9 +1286,45 @@ StateMachine.states.boot = {
 };
 
 /********* **********
-  8.2) floor State
+  8.2) main_menu State
 ********** *********/
-
+StateMachine.states.main_menu = {
+  pointer : function(sm, x, y, e) {
+    sm.button_play.click_check( x, y );
+  },
+  init: function(sm) {
+    const canvas = sm.canvas;
+    sm.button_play = sm.button_play || new Button({
+      x: canvas.width / 2 - 128, y: canvas.height / 2, w: 256,  h:64,
+      //simg: simg_buttons, frame_index: 0,
+      on_click : function(button, x, y){
+        //console.log(x, y)
+        sm.set_state('floor');
+      }
+    });
+  
+  },
+  update: function(sm, t) {},
+  render: function(sm, ctx, canvas) {
+    //ctx.fillStyle = 'white';
+    //ctx.fillRect(0,0, 32, 32)
+    sm.button_play.render(ctx);
+  }
+};
+/********* **********
+  8.3) save_manager State
+********** *********/
+StateMachine.states.save_manager = {
+  pointer : function(sm, x, y, e) {},
+  init: function(sm) {},
+  update: function(sm, t) {},
+  render: function(sm, ctx, canvas) {
+    
+  }
+};
+/********* **********
+  8.4) floor State
+********** *********/
 StateMachine.states.floor = {
 
   pointer : function(sm, x, y, e) {
@@ -1313,11 +1353,12 @@ StateMachine.states.floor = {
   
     const canvas = sm.canvas;
 
-    sm.button_options = new Button({
+    sm.button_options = sm.button_options || new Button({
       x: canvas.width - 64, y: 32, w: 32,  h:32,
       simg: simg_buttons, frame_index: 0,
       on_click : function(button, x, y){
         console.log(button)
+        sm.set_state('options');
       }
     });
   
@@ -1360,6 +1401,17 @@ StateMachine.states.floor = {
     
   }
 
+};
+/********* **********
+  8.5) options State
+********** *********/
+StateMachine.states.options = {
+  pointer : function(sm, x, y, e) {
+    StateMachine.set_state('floor');
+  },
+  init: function(sm) {},
+  update: function(sm, t) {},
+  render: function(sm, ctx, canvas) {}
 };
 
 /********* **********
