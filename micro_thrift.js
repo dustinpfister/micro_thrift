@@ -1393,6 +1393,7 @@ StateMachine.states.boot = {
 StateMachine.states.main_menu = {
   pointer : function(sm, x, y, e) {
     sm.button_play.click_check( x, y );
+    sm.button_start_sm.click_check( x, y );
   },
   init: function(sm) {
     const canvas = sm.canvas;
@@ -1400,29 +1401,48 @@ StateMachine.states.main_menu = {
       x: canvas.width / 2 - 128, y: canvas.height / 2, w: 256,  h:64,
       //simg: simg_buttons, frame_index: 0,
       on_click : function(button, x, y){
-        //console.log(x, y);
         sm.load_save();
         sm.set_state('floor');
+      }
+    });
+    
+    sm.button_start_sm = sm.button_start_sm || new Button({
+      x: canvas.width / 2 - 128, y: canvas.height / 2 + 96, w: 256,  h:64,
+      //simg: simg_buttons, frame_index: 0,
+      on_click : function(button, x, y){
+        sm.set_state('save_manager');
       }
     });
   
   },
   update: function(sm, t) {},
   render: function(sm, ctx, canvas) {
-    //ctx.fillStyle = 'white';
-    //ctx.fillRect(0,0, 32, 32)
     sm.button_play.render(ctx);
+    sm.button_start_sm.render(ctx);
+
   }
 };
 /********* **********
   8.3) save_manager State
 ********** *********/
 StateMachine.states.save_manager = {
-  pointer : function(sm, x, y, e) {},
-  init: function(sm) {},
+  pointer : function(sm, x, y, e) {
+    sm.button_mm2.click_check( x, y );
+  },
+  init: function(sm) {
+  
+    sm.button_mm2 = sm.button_mm2 || new Button({
+      x: 32, y: 32, w: 128,  h:64,
+      simg: simg_buttons_options, frame_index: 0,
+      on_click : function(button, x, y){
+        sm.set_state('main_menu');
+      }
+    });
+  
+  },
   update: function(sm, t) {},
   render: function(sm, ctx, canvas) {
-    
+    sm.button_mm2.render(ctx);
   }
 };
 /********* **********
