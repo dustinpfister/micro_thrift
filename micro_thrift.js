@@ -29,6 +29,7 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 const conf = {
   R: '1B'
 };
+/*
 conf.SAVE_DEFAULT = {
   money: 0,
   map_data: {
@@ -42,6 +43,66 @@ conf.SAVE_DEFAULT = {
     176: 'b02',177: 'b02',178: 'b02',179: 'b02',180: 'b02',181: 'b02',182: 'b02',
     185: 'b02',186: 'b02',187: 'b02',188: 'b02',189: 'b02',190: 'b02',191: 'b02'
   }
+};
+*/
+conf.SAVE_DEFAULT = {
+    "money": 78.55,
+    "map_data": {
+        "17": "b03",
+        "19": "b03",
+        "33": "b03",
+        "35": "b04w0100",
+        "65": "b03",
+        "67": "b03",
+        "69": "b03",
+        "73": "b04w0320w0000",
+        "74": "b04w0317w0000",
+        "75": "b03",
+        "76": "b04w0000",
+        "77": "b03",
+        "78": "b03",
+        "81": "b04w0105",
+        "83": "b04w0000",
+        "85": "b04w0202w0003w0319w0316",
+        "97": "b04w0201w0317w0102w0104",
+        "99": "b04w0001",
+        "101": "b04w0316",
+        "105": "b04w0103",
+        "106": "b04w0000",
+        "107": "b04w0206",
+        "108": "b04w0002",
+        "109": "b04w0320",
+        "110": "b04w0103w0000",
+        "113": "b03",
+        "115": "b04w0100",
+        "117": "b04w0316",
+        "129": "b04w0000w0317",
+        "131": "b04w0201w0201",
+        "133": "b04w0105",
+        "137": "b03",
+        "138": "b04w0001",
+        "139": "b04w0002",
+        "140": "b04w0000",
+        "141": "b04w0000w0102",
+        "142": "b04w0200",
+        "145": "b04w0203w0201",
+        "147": "b04w0000",
+        "149": "b04w0203",
+        "176": "b02",
+        "177": "b02",
+        "178": "b02",
+        "179": "b02",
+        "180": "b02",
+        "181": "b02",
+        "182": "b02",
+        "185": "b02",
+        "186": "b02",
+        "187": "b02",
+        "188": "b02",
+        "189": "b02",
+        "190": "b02",
+        "191": "b02"
+    }
 };
 // max number of display objects used for sm.pool
 conf.MAX_OBJECTS = {
@@ -1102,8 +1163,7 @@ class Button {
     if(!this.simg){
       ctx.fillStyle = 'white';
       ctx.fillRect(this.x, this.y, this.w, this.h);
-    }
-     
+    }   
     if(this.simg){
       this.simg.render_frame(ctx, 
         Math.floor(this.frame_index || 0), 
@@ -1112,8 +1172,7 @@ class Button {
     }
   }
   
-  
-}
+};
 /********* **********
   8.0) StateMachine
 ********** *********/
@@ -1141,6 +1200,30 @@ StateMachine.update = function(t=0){
 
 StateMachine.format_money = function(amount=0.00, digits=13){
   return '$' + String( amount.toFixed(2) ).padStart(digits, '-')
+};
+
+StateMachine.create_save = function(){
+  const sm = this;
+  const map_data = {};
+  const len = sm.map.grid.length;
+  let i = 0;
+  while( i < len){
+    const tile = sm.map.grid[i];
+    let str = 'b' + String(tile.type_index).padStart(2, '0');
+    if( StateMachine.is_shelf(tile) ){
+      tile.data.items.forEach((item)=>{
+        str += 'w' + String(item.item_index).padStart(2, 0) + String(item.price_index).padStart(2, 0);
+      });
+    }
+    if(tile.type_index != 1){
+      map_data[i] = str;
+    }
+    i += 1;
+  }
+  return {
+    money: sm.money,
+    map_data: map_data
+  };
 };
 
 StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
@@ -1270,7 +1353,8 @@ StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
   tile.type_index = n >= 5 ? 5 : tile.type_index;
   tile.frame_index = tile.type_index - 3;
   tile.data.items.push({
-  item_index: item_index,
+    item_index: item_index,
+    price_index: price_index,
     desc: item.desc,
     price: conf.price_options[ price_index ]
   });
@@ -1362,7 +1446,8 @@ StateMachine.states.floor = {
        console.log('non map area clicked at : ' + x + ',' + y);
        
        sm.button_options.click_check( x, y );
-       
+      
+       console.log( StateMachine.create_save() );
        
      }
      
