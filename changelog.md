@@ -34,10 +34,10 @@
 * have a StateMachine.create_save method
 * start a save manager state with a back to main menu button
 * have a button that will start save manager state in main menu state
+* have a sm.saves object with an auto key, and 3 numbered slots
+* in the boot state check for local storage and if there load sm.saves data
+* in the floor state keep saving to sm.saves.auto
 
-* (pending) - have a sm.save\_slots object with an auto key, and 3 numbered slots
-* (pending) - in the boot state check for local storage and if there load sm save slots data
-* (pending) - in the floor state keep saving to sm.save\_slots.auto
 * (pending) - in save manager can copy from one slot to another
 * (pending) - in save manager can delete any slot
 * (pending) - in save manager can play any slot

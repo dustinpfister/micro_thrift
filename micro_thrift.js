@@ -1181,7 +1181,9 @@ const StateMachine = {
     current: null,
     canvas: null,
     ctx: null,
-    saves: {},
+    saves: {
+      auto: null, 0: null, 1: null, 2: null
+    },
     states: {}
 };
 
@@ -1365,20 +1367,35 @@ StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
 ********** *********/
 StateMachine.states.boot = {
 
-  pointer : function(sm, x, y, e) {
-  },
+  pointer : function(sm, x, y, e) {},
 
   init: function(sm) {
-  
+    // set up sm.pool
     sm.pool = new ObjPool({
       count: conf.MAX_OBJECTS.total, w: 24, h: 24, sheets:[simg_pool_customer, simg_pool_worker]
     });
-    
-    sm.load_save();
-
+    // check for saves in local storage + load or create a saves and set up sm.money and sm.map in the process
+    const saves = localStorage.getItem('micro_store_saves');
+    if(saves){
+      console.log('looks like we have saves in the local storage of this client');
+      sm.saves = JSON.parse(saves);
+      sm.load_save(sm.saves.auto);
+    }
+    if(!saves){
+      console.log('no saves found in local storage! setting up a new one then...');
+      // start a new game
+      sm.load_save();
+      // create a save and set that up as sm.saves.auto
+      const s1 = sm.create_save();
+      sm.saves = {
+        auto: s1,
+        0: null, 1: null, 2: null
+      };
+      const saves_str = JSON.stringify( sm.saves );
+      localStorage.setItem('micro_store_saves', saves_str);
+    }
+    // start main_menu state, or jump directly into floor state at this point.
     StateMachine.set_state('floor');
-    //StateMachine.set_state('main_menu');
-    
   },
 
   update: function(sm, t) {},
@@ -1499,8 +1516,13 @@ StateMachine.states.floor = {
       if(obj.active){
         AI.main(sm, obj);
       }
-
     });
+    
+    // update sm.saves.auto
+    sm.saves.auto = sm.create_save();
+    const saves_str = JSON.stringify( sm.saves );
+    localStorage.setItem('micro_store_saves', saves_str);
+    
   },
 
   render: function(sm, ctx, canvas) {
