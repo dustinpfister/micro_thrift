@@ -26,6 +26,7 @@
 * (pending) - customers will leave map after making buying an item, or after a timeout
 
 ## R2 () - User UI, Gameplay improvements
+* (pending) have a staff state that will be used to higher, fire, and view status of workers
 
 ## R1 () - Button Class, main menu, save manager, and options states
 * start a button class
@@ -45,9 +46,8 @@
 * in save manager can delete any slot
 * Simg asset for main menu title
 * common conf.palette used for all SImg assets
-
-* (pending) - simple tile edit menu in floor state using buttons
-
+* (pending) - display info about a tile when it is clicked
+* (pending) - have options for changing tile state ( clear, build shelf)
 
 ## R0 ( done 09/01/2026 ) - Very basic core idea of the game started
 * starting out with the code that I worked out at jsFiddle
