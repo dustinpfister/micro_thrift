@@ -37,10 +37,11 @@
 * have a sm.saves object with an auto key, and 3 numbered slots
 * in the boot state check for local storage and if there load sm.saves data
 * in the floor state keep saving to sm.saves.auto
+* in save manager can play any slot
 
 * (pending) - in save manager can copy from one slot to another
 * (pending) - in save manager can delete any slot
-* (pending) - in save manager can play any slot
+
 * (pending) - in main menu if there is an auto save display a continue button
 
 * (pending) - Simg asset for main menu title

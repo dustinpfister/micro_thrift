@@ -1116,10 +1116,13 @@ class Button {
   8.0) StateMachine
 ********** *********/
 const StateMachine = {
+    map:null, money:null, lu:null,
     current_key: 'boot',
     current: null,
     canvas: null,
     ctx: null,
+    save_mode: null,
+    save_slot: null,
     saves: {
       auto: null, 0: null, 1: null, 2: null
     },
@@ -1162,6 +1165,7 @@ StateMachine.create_save = function(){
     i += 1;
   }
   return {
+    lu: new Date(),
     money: sm.money,
     map_data: map_data
   };
@@ -1169,6 +1173,7 @@ StateMachine.create_save = function(){
 
 StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
   const sm = this;
+  sm.lu = new Date(save_obj.lu);
   sm.money = save_obj.money;
   sm.map = new WMap({
       width: 16, height: 16,
@@ -1334,7 +1339,8 @@ StateMachine.states.boot = {
       localStorage.setItem('micro_store_saves', saves_str);
     }
     // start main_menu state, or jump directly into floor state at this point.
-    StateMachine.set_state('floor');
+    //StateMachine.set_state('floor');
+    StateMachine.set_state('save_manager');
   },
 
   update: function(sm, t) {},
@@ -1384,6 +1390,11 @@ StateMachine.states.main_menu = {
 StateMachine.states.save_manager = {
   pointer : function(sm, x, y, e) {
     sm.button_mm2.click_check( x, y );
+    sm.button_sm_copy.click_check( x, y );
+    ['auto', 0, 1, 2].forEach((slot_key, i)=>{
+      const key = 'button_save_' + slot_key ;
+      sm[key].click_check( x, y );
+    });
   },
   init: function(sm) {
   
@@ -1394,11 +1405,54 @@ StateMachine.states.save_manager = {
         sm.set_state('main_menu');
       }
     });
+
+    sm.button_sm_copy = sm.button_sm_copy || new Button({
+      x: 64, y: canvas.height * 0.50, w: 128,  h:64,
+      //simg: simg_buttons_options, frame_index: 0,
+      on_click : function(button, x, y){
+        console.log('copy');
+      }
+    });
+
+    ['auto', 0, 1, 2].forEach((slot_key, i)=>{
+      const key = 'button_save_' + slot_key ;
+      sm[key] = sm[key] || new Button({
+        x: 64 + (16 + 96) * i, y: canvas.height * 0.25, w: 96,  h:96,
+        //simg: simg_buttons_options, frame_index: 0,
+        on_click : function(button, x, y){
+          console.log('save: ' + slot_key);
+          const save = sm.saves[slot_key];
+          if(save){
+            console.log(save);
+            sm.load_save(save);
+            sm.set_state('floor');
+          }
+          //sm.set_state('main_menu');
+        }
+    });
+
+    });
   
   },
   update: function(sm, t) {},
   render: function(sm, ctx, canvas) {
+    sm.button_sm_copy.render(ctx);
     sm.button_mm2.render(ctx);
+    ['auto', 0, 1, 2].forEach((slot_key, i)=>{
+      const key = 'button_save_' + slot_key ;
+      const button = sm[key];
+      const save = sm.saves[slot_key]; 
+      button.render(ctx);
+      ctx.fillStyle = 'black';
+      ctx.textBaseline = 'top';
+      ctx.font = '15px monospace';
+      ctx.fillText(slot_key, button.x, button.y);
+      if(save){
+        ctx.font = '10px monospace';
+        ctx.fillText('$' + save.money, button.x, button.y + 20);
+        ctx.fillText(save.lu, button.x, button.y + 40);
+      }
+    });
   }
 };
 /********* **********
@@ -1407,7 +1461,7 @@ StateMachine.states.save_manager = {
 StateMachine.states.floor = {
 
   pointer : function(sm, x, y, e) {
-     console.log('');
+     
      
      const tile = sm.map.getByPX(x, y);
      if( tile ){
