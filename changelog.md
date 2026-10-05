@@ -38,8 +38,8 @@
 * in the boot state check for local storage and if there load sm.saves data
 * in the floor state keep saving to sm.saves.auto
 * in save manager can play any slot
+* in save manager can copy from one slot to another
 
-* (pending) - in save manager can copy from one slot to another
 * (pending) - in save manager can delete any slot
 
 * (pending) - in main menu if there is an auto save display a continue button

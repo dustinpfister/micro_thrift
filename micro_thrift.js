@@ -1121,8 +1121,8 @@ const StateMachine = {
     current: null,
     canvas: null,
     ctx: null,
-    save_mode: null,
-    save_slot: null,
+    save_mode: 'play', // 'copy, copy_slot, delete, delete_slot, play'
+    save_slot: 0, // 0, 1, 2
     saves: {
       auto: null, 0: null, 1: null, 2: null
     },
@@ -1410,7 +1410,14 @@ StateMachine.states.save_manager = {
       x: 64, y: canvas.height * 0.50, w: 128,  h:64,
       //simg: simg_buttons_options, frame_index: 0,
       on_click : function(button, x, y){
-        console.log('copy');
+        // if save mode is all ready set to copy, set back to 'play' mode
+        if(sm.save_mode === 'copy'){
+           sm.save_mode = 'play';
+           return;
+        }
+        if(sm.save_mode != 'copy'){
+          sm.save_mode = 'copy';
+        }
       }
     });
 
@@ -1422,11 +1429,23 @@ StateMachine.states.save_manager = {
         on_click : function(button, x, y){
           console.log('save: ' + slot_key);
           const save = sm.saves[slot_key];
-          if(save){
-            console.log(save);
+          if(save && sm.save_mode === 'play'){
+            console.log('playing save : ' + slot_key);
             sm.load_save(save);
             sm.set_state('floor');
           }
+          if(sm.save_mode === 'copy_slot'){
+            console.log('')
+            sm.saves[slot_key] = sm.saves[sm.save_slot];
+            sm.save_mode = 'play';
+            sm.save_slot = 0;
+          }
+          if(save && sm.save_mode === 'copy'){
+             console.log('set to copy_slot mode with slot: ' + slot_key);
+             sm.save_mode = 'copy_slot';
+             sm.save_slot = slot_key;
+          }
+          
           //sm.set_state('main_menu');
         }
     });
@@ -1453,6 +1472,10 @@ StateMachine.states.save_manager = {
         ctx.fillText(save.lu, button.x, button.y + 40);
       }
     });
+    ctx.fillStyle = 'white';
+    ctx.textBaseline = 'top';
+    ctx.font = '15px monospace';
+    ctx.fillText('save mode: ' + sm.save_mode + ', save slot: ' + sm.save_slot, 20, canvas.height - 25);
   }
 };
 /********* **********
