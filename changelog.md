@@ -1,29 +1,31 @@
 # micro_thrift change log
 
-## R6 () - donor object type, donations worker role
+## RX () - donor object type, donations worker role
 * (pending) - donor object type stated
 * (pending) - donations worker role started
 
-## R5 () - Staff state
+## RX () - Staff state
 * (pending) - can use Staff state to hire and fire
 * (pending) - can use Staff state to set hours and schedule
 * (pending) - workers then spawn by way of game time system and set schedule 
 * (pending) - can set primary role when working out schedule
 
-## R4 () - worker roles, cashier
+## RX () - worker roles, cashier
 * (pending) - a worker can have a role \( stock, cashier \) 
 * (pending) - have a cashout tile 
 * (pending) - customers can now only buy an item at a cashout tile that is active by a worker
 * (pending) - a worker will change roles based on need
 
-## R3 () - Game Time System
+## RX () - Game Time System
 * (pending) - start a game time system
 * (pending) - have customers spawn by way of game time system
 
-## R2 () - Customer AI buying choice and spawn locations
+## RX () - Customer AI buying choice and spawn locations
 * (pending) - customers will spawn at fixed location at top of map
 * (pending) - customer AI : choice of buying an item or not based on personal pref set on spawn
 * (pending) - customers will leave map after making buying an item, or after a timeout
+
+## R2 () - User UI, Gameplay improvements
 
 ## R1 () - Button Class, main menu, save manager, and options states
 * start a button class
@@ -41,10 +43,12 @@
 * in save manager can copy from one slot to another
 * in main menu have a start new / continue button
 * in save manager can delete any slot
+* Simg asset for main menu title
 
-* (pending) - Simg asset for main menu title
-* (pending) - simple tile edit menu in floor state using buttons
 * (pending) - common conf.palette used for all SImg assets
+
+* (pending) - simple tile edit menu in floor state using buttons
+
 
 ## R0 ( done 09/01/2026 ) - Very basic core idea of the game started
 * starting out with the code that I worked out at jsFiddle
