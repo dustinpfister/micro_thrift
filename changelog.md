@@ -40,9 +40,8 @@
 * in save manager can play any slot
 * in save manager can copy from one slot to another
 * in main menu have a start new / continue button
+* in save manager can delete any slot
 
-* (pending) - in save manager can delete any slot
- 
 * (pending) - Simg asset for main menu title
 * (pending) - simple tile edit menu in floor state using buttons
 * (pending) - common conf.palette used for all SImg assets

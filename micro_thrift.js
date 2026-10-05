@@ -1325,6 +1325,12 @@ StateMachine.states.boot = {
     if(saves){
       console.log('looks like we have saves in the local storage of this client');
       sm.saves = JSON.parse(saves);
+      Object.keys(sm.saves).forEach((key)=>{
+        const save = sm.saves[key];
+        if(save){
+          save.lu = new Date(save.lu);
+        }
+      })
       sm.load_save(sm.saves.auto);
     }
     if(!saves){
@@ -1361,7 +1367,12 @@ StateMachine.states.main_menu = {
       x: canvas.width / 2 - 128, y: canvas.height / 2, w: 256,  h:64,
       //simg: simg_buttons, frame_index: 0,
       on_click : function(button, x, y){
-        sm.load_save();
+        if(sm.saves.auto){
+          sm.load_save(sm.saves.auto);
+        }
+        if(!sm.saves.auto){
+          sm.load_save();
+        }
         sm.set_state('floor');
       }
     });
@@ -1390,6 +1401,8 @@ StateMachine.states.main_menu = {
     ctx.font = '25px monospace';
     ctx.textBaseline = 'top';
     ctx.fillText('save manager', sm.button_start_sm.x + 10, sm.button_start_sm.y + 10);
+
+    sm.render_revision_string(ctx, 10, canvas.height - 15 );
   }
 };
 /********* **********
@@ -1399,6 +1412,7 @@ StateMachine.states.save_manager = {
   pointer : function(sm, x, y, e) {
     sm.button_mm2.click_check( x, y );
     sm.button_sm_copy.click_check( x, y );
+    sm.button_sm_delete.click_check( x, y );
     ['auto', 0, 1, 2].forEach((slot_key, i)=>{
       const key = 'button_save_' + slot_key ;
       sm[key].click_check( x, y );
@@ -1415,7 +1429,7 @@ StateMachine.states.save_manager = {
     });
 
     sm.button_sm_copy = sm.button_sm_copy || new Button({
-      x: 64, y: canvas.height * 0.50, w: 128,  h:64,
+      x: 40, y: canvas.height * 0.50, w: 128,  h:64,
       //simg: simg_buttons_options, frame_index: 0,
       on_click : function(button, x, y){
         // if save mode is all ready set to copy, set back to 'play' mode
@@ -1429,10 +1443,25 @@ StateMachine.states.save_manager = {
       }
     });
 
+    sm.button_sm_delete = sm.button_sm_delete || new Button({
+      x: 40 + 128 + 10, y: canvas.height * 0.50, w: 128,  h:64,
+      //simg: simg_buttons_options, frame_index: 0,
+      on_click : function(button, x, y){
+        // if save mode is all ready set to delete, set back to 'play' mode
+        if(sm.save_mode === 'delete'){
+           sm.save_mode = 'play';
+           return;
+        }
+        if(sm.save_mode != 'delete'){
+          sm.save_mode = 'delete';
+        }
+      }
+    });
+
     ['auto', 0, 1, 2].forEach((slot_key, i)=>{
       const key = 'button_save_' + slot_key ;
       sm[key] = sm[key] || new Button({
-        x: 64 + (16 + 96) * i, y: canvas.height * 0.25, w: 96,  h:96,
+        x: 40 + (16 + 125) * i, y: canvas.height * 0.25, w: 125,  h:96,
         //simg: simg_buttons_options, frame_index: 0,
         on_click : function(button, x, y){
           console.log('save: ' + slot_key);
@@ -1445,8 +1474,16 @@ StateMachine.states.save_manager = {
           if(sm.save_mode === 'copy_slot'){
             console.log('')
             sm.saves[slot_key] = sm.saves[sm.save_slot];
+            const saves_str = JSON.stringify( sm.saves );
+            localStorage.setItem('micro_store_saves', saves_str);
             sm.save_mode = 'play';
             sm.save_slot = 0;
+          }
+          if(sm.save_mode === 'delete'){
+            sm.saves[slot_key] =  null;
+            const saves_str = JSON.stringify( sm.saves );
+            localStorage.setItem('micro_store_saves', saves_str);
+            sm.save_mode = 'play';
           }
           if(save && sm.save_mode === 'copy'){
              console.log('set to copy_slot mode with slot: ' + slot_key);
@@ -1464,6 +1501,15 @@ StateMachine.states.save_manager = {
   update: function(sm, t) {},
   render: function(sm, ctx, canvas) {
     sm.button_sm_copy.render(ctx);
+    ctx.fillStyle = 'black';
+    ctx.textBaseline = 'top';
+    ctx.font = '20px monospace';
+    ctx.fillText('copy', sm.button_sm_copy.x + 10, sm.button_sm_copy.y + 10);
+    sm.button_sm_delete.render(ctx);
+    ctx.fillStyle = 'black';
+    ctx.textBaseline = 'top';
+    ctx.font = '20px monospace';
+    ctx.fillText('delete', sm.button_sm_delete.x + 10, sm.button_sm_delete.y + 10);
     sm.button_mm2.render(ctx);
     ['auto', 0, 1, 2].forEach((slot_key, i)=>{
       const key = 'button_save_' + slot_key ;
@@ -1473,11 +1519,19 @@ StateMachine.states.save_manager = {
       ctx.fillStyle = 'black';
       ctx.textBaseline = 'top';
       ctx.font = '15px monospace';
-      ctx.fillText(slot_key, button.x, button.y);
+      ctx.fillText(slot_key, button.x + 10, button.y + 10);
       if(save){
         ctx.font = '10px monospace';
-        ctx.fillText('$' + save.money, button.x, button.y + 20);
-        ctx.fillText(save.lu, button.x, button.y + 40);
+        ctx.fillText('$' + save.money, button.x + 10, button.y + 30);
+        const m_str = save.lu.toLocaleString('default', { month: 'short' });
+        const date_str = m_str + '/' +
+         + save.lu.getDate() + '/' +  
+         + save.lu.getFullYear()
+        ctx.fillText(date_str, button.x + 10, button.y + 50);
+
+        const t_str = save.lu.getHours() + ':'
+         + save.lu.getMinutes();
+        ctx.fillText(t_str, button.x + 10, button.y + 70);
       }
     });
     ctx.fillStyle = 'white';
