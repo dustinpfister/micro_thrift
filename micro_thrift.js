@@ -30,6 +30,8 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 const conf = {
   R: '1B'
 };
+conf.palette_1 = ['', 'black', 'white', 'tan', 
+  'red', 'lime', 'blue', 'yellow', 'cyan', 'purple'];
 conf.SAVE_DEFAULT = {
   money: 0,
   map_data: {
@@ -124,7 +126,7 @@ class SImg {
 const simg_tiles_null = new SImg( {
   width: 64, frame_width: 16,
   px_size: 16,
-  pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime'],
+  pallette: conf.palette_1,
   px: [
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 2,2,2,2,2,3,3,3,3,2,2,2,2,3,3,3, 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6, 
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3, 2,2,2,2,2,3,3,3,3,2,2,2,2,3,3,3, 6,6,0,0,0,0,0,0,0,0,0,0,0,0,6,6,
@@ -147,8 +149,7 @@ const simg_tiles_null = new SImg( {
 const simg_tiles_stock = new SImg( {
   width: 48, frame_width: 16,
   px_size: 16,
-  pallette: ['', 'black', 'white', 'tan', 
-  'red', 'lime', 'blue', 'yellow', 'cyan', 'purple'],
+  pallette: conf.palette_1,
   px: [
     3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3, 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3, 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3, 
     3,3,2,2,2,2,2,2,2,2,2,2,2,2,3,3, 3,3,5,5,5,2,2,2,2,2,2,2,6,6,3,3, 3,3,5,5,5,2,2,2,2,2,2,2,6,6,3,3, 
@@ -172,7 +173,7 @@ const simg_tiles_stock = new SImg( {
   2.2) pool_assets
 ********** *********/
 const simg_pool_customer = new SImg( {
-  width: 16, frame_width: 16, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
+  width: 16, frame_width: 16, px_size: 16, pallette: conf.palette_1,
   px: [
     6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
     6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,
@@ -193,7 +194,7 @@ const simg_pool_customer = new SImg( {
   ] } );
 
 const simg_pool_worker = new SImg( {
-  width: 16, frame_width: 16, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
+  width: 16, frame_width: 16, px_size: 16, pallette: conf.palette_1,
   px: [
     7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
     7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
@@ -216,7 +217,7 @@ const simg_pool_worker = new SImg( {
   2.3) button_assets
 ********** *********/
 const simg_buttons = new SImg( {
-  width: 16, frame_width: 16, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
+  width: 16, frame_width: 16, px_size: 16, pallette: conf.palette_1,
   px: [
     0,0,0,0,0,2,2,0,0,2,2,0,0,0,0,0,
     0,0,0,2,2,2,2,0,0,2,2,2,2,0,0,0,
@@ -237,7 +238,7 @@ const simg_buttons = new SImg( {
   ]});
 
 const simg_buttons_options = new SImg( {
-  width: 32, frame_width: 16, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
+  width: 32, frame_width: 16, px_size: 16, pallette: conf.palette_1,
   px: [
     3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
     3,2,2,2,2,2,2,2,2,2,2,2,2,1,1,3,  3,1,1,1,2,2,2,2,2,2,2,2,1,1,1,3,
@@ -252,7 +253,7 @@ const simg_buttons_options = new SImg( {
   2.4) main title
 ********** *********/
 const simg_main_title = new SImg( {
-  width: 40, frame_width: 40, px_size: 16, pallette: ['', 'black', 'white', '#cacaca', '#8a8a8a', '#4a4a4a', 'lime', 'cyan'],
+  width: 40, frame_width: 40, px_size: 16, pallette: conf.palette_1,
   px: [
     7,7,7,7,7,7,7,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,7,7,7,7, 
     7,2,0,0,0,2,0,2, 2,2,2,2,0,2,2,2, 2,2,0,2,2,2,2,2, 0,2,2,2,2,2,0,0, 0,0,0,0,0,0,0,7,

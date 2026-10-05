@@ -44,8 +44,7 @@
 * in main menu have a start new / continue button
 * in save manager can delete any slot
 * Simg asset for main menu title
-
-* (pending) - common conf.palette used for all SImg assets
+* common conf.palette used for all SImg assets
 
 * (pending) - simple tile edit menu in floor state using buttons
 
