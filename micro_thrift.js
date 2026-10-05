@@ -1319,28 +1319,25 @@ StateMachine.states.boot = {
       count: conf.MAX_OBJECTS.total, w: 24, h: 24, sheets:[simg_pool_customer, simg_pool_worker]
     });
     // check for saves in local storage + load or create a saves and set up sm.money and sm.map in the process
+    //localStorage.clear();
     const saves = localStorage.getItem('micro_store_saves');
+    console.log(saves)
     if(saves){
       console.log('looks like we have saves in the local storage of this client');
       sm.saves = JSON.parse(saves);
       sm.load_save(sm.saves.auto);
     }
     if(!saves){
-      console.log('no saves found in local storage! setting up a new one then...');
-      // start a new game
-      sm.load_save();
-      // create a save and set that up as sm.saves.auto
-      const s1 = sm.create_save();
+      console.log('no saves found in local storage!');
       sm.saves = {
-        auto: s1,
+        auto: null,
         0: null, 1: null, 2: null
       };
-      const saves_str = JSON.stringify( sm.saves );
-      localStorage.setItem('micro_store_saves', saves_str);
     }
     // start main_menu state, or jump directly into floor state at this point.
     //StateMachine.set_state('floor');
-    StateMachine.set_state('save_manager');
+    //StateMachine.set_state('save_manager');
+    StateMachine.set_state('main_menu');
   },
 
   update: function(sm, t) {},
@@ -1359,6 +1356,7 @@ StateMachine.states.main_menu = {
   },
   init: function(sm) {
     const canvas = sm.canvas;
+
     sm.button_play = sm.button_play || new Button({
       x: canvas.width / 2 - 128, y: canvas.height / 2, w: 256,  h:64,
       //simg: simg_buttons, frame_index: 0,
@@ -1379,9 +1377,19 @@ StateMachine.states.main_menu = {
   },
   update: function(sm, t) {},
   render: function(sm, ctx, canvas) {
+    
     sm.button_play.render(ctx);
-    sm.button_start_sm.render(ctx);
+    ctx.fillStyle = 'black';
+    ctx.font = '25px monospace';
+    ctx.textBaseline = 'top';
+    const play_text = sm.saves.auto ? 'continue' : 'start_new';
+    ctx.fillText(play_text, sm.button_play.x + 10, sm.button_play.y + 10);
 
+    sm.button_start_sm.render(ctx);
+    ctx.fillStyle = 'black';
+    ctx.font = '25px monospace';
+    ctx.textBaseline = 'top';
+    ctx.fillText('save manager', sm.button_start_sm.x + 10, sm.button_start_sm.y + 10);
   }
 };
 /********* **********
