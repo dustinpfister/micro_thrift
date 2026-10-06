@@ -46,7 +46,7 @@
 * in save manager can delete any slot
 * Simg asset for main menu title
 * common conf.palette used for all SImg assets
-* (pending) - display info about a tile when it is clicked
+* display info about a tile when it is clicked
 * (pending) - have options for changing tile state ( clear, build shelf)
 
 ## R0 ( done 09/01/2026 ) - Very basic core idea of the game started

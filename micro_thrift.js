@@ -1366,9 +1366,9 @@ StateMachine.states.boot = {
       };
     }
     // start main_menu state, or jump directly into floor state at this point.
-    //StateMachine.set_state('floor');
+    StateMachine.set_state('floor');
     //StateMachine.set_state('save_manager');
-    StateMachine.set_state('main_menu');
+    //StateMachine.set_state('main_menu');
   },
 
   update: function(sm, t) {},
@@ -1576,32 +1576,36 @@ StateMachine.states.save_manager = {
 ********** *********/
 StateMachine.states.floor = {
 
+  data: {
+     tile_sel : null
+  },
+
   pointer : function(sm, x, y, e) {
+    const data = sm.current.data;
+    const tile = sm.map.getByPX(x, y);
+    if( tile ){
+      data.tile_sel = tile;
+      console.log('tile pos: ' + tile.x + ',' + tile.y + ' ( i ' + tile.i + ')' );
+      //tile.data.items.forEach(((item)=>{
+      //  console.log('  ' + item.desc + ' $' +item.price);
+      //}));
+    }
      
-     
-     const tile = sm.map.getByPX(x, y);
-     if( tile ){
-       console.log('clicked tile: ');
-       console.log('pos: ' + tile.x + ',' + tile.y + ' ( i ' + tile.i + ')' );
-       tile.data.items.forEach(((item)=>{
-         console.log('  ' + item.desc + ' $' +item.price);
-       }));
-     }
-     
-     if(!tile){
-       console.log('non map area clicked at : ' + x + ',' + y);
-       
-       sm.button_options.click_check( x, y );
-      
-       console.log( StateMachine.create_save() );
-       
-     }
+    if(!tile){
+      data.tile_sel = null;
+      console.log('non map area clicked at : ' + x + ',' + y);  
+      sm.button_options.click_check( x, y );
+    }
+
+    console.log(data)
      
   },
 
   init: function(sm) {
-  
+    const data = sm.current.data;
     const canvas = sm.canvas;
+
+    data.tile_sel = null;
 
     sm.button_options = sm.button_options || new Button({
       x: canvas.width - 64, y: 32, w: 32,  h:32,
@@ -1635,6 +1639,8 @@ StateMachine.states.floor = {
   },
 
   render: function(sm, ctx, canvas) {
+    const data = sm.current.data;
+
     sm.map.render_grid(ctx);
     sm.pool.render(ctx);
     ctx.fillStyle = 'white';
@@ -1650,6 +1656,22 @@ StateMachine.states.floor = {
     ctx.fillStyle = '#00af00';
     ctx.fillRect(24 * 2 + 10, 420, 120 * full.per, 10);
     
+    // tile_sel?
+    if(data.tile_sel){
+      const tile = data.tile_sel;
+      ctx.fillStyle = 'white';
+      ctx.textBaseline = 'top';
+      ctx.font = '15px monospace';
+      ctx.fillText('selected tile: ', 400, 100);
+      ctx.fillText('pos: ' + tile.x + ', ' + tile.y, 420, 115);
+      ctx.font = '10px monospace';
+      tile.data.items.forEach(((item, i)=>{
+        const y = 135 + 15 * i;
+        const desc = item.desc.substr(0, 10);
+        ctx.fillText(i + ')  ' + desc + ' $' + item.price, 420, y);
+      }));
+    }
+
     sm.button_options.render(ctx);
     
     sm.render_revision_string(ctx, 10, canvas.height - 15 );
