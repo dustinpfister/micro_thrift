@@ -40,8 +40,9 @@
 * utils.distance method
 * start a UI.Menu class that will be a collection of buttons and other UI features
 * Have a UI.ButtonGrid class that is a Grid of UI.Buttons
-* (pending) - have a tile menu in the floor state to the right of the map
-* (pending) - have tile mutation buttons for the map (clear, and build shelf)
+
+* (pending) - new SImg assets for tile mutation menu in floor state
+* (pending) - have tile action buttons for the map (clear, build shelf, wall, and info)
 
 ## R1 ( done 09/07/2026 ) - Button Class, main menu, save manager, and options states
 * start a button class
