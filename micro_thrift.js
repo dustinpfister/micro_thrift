@@ -28,8 +28,9 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
   1.0) Config
 ********** *********/
 const conf = {
-  R: '1B'
+  R: '1'
 };
+conf.tile_size = 24;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
   'red', 'lime', 'blue', 'yellow', 'cyan', 'purple'];
 conf.SAVE_DEFAULT = {
@@ -59,26 +60,10 @@ conf.price_options = [ // price options 0-29
    100,   125, 150,  175,  200, 225, 250, 275, 300, 325
 ]
 conf.items = [
-  {
-    desc: 'small plastic container',
-    value_index: 0,
-    donation_rate: 1.00
-  },
-  {
-    desc: 'binder',
-    value_index: 2,
-    donation_rate: 0.85
-  },
-  {
-    desc: 'plain white mug',
-    value_index: 3,
-    donation_rate: 0.45
-  },
-  {
-    desc: 'mid century pyrex bowl',
-    value_index: 18,
-    donation_rate: 0.05
-  }
+  { desc: 'small plastic container', value_index: 0 },
+  { desc: 'binder', value_index: 2 },
+  { desc: 'plain white mug', value_index: 3 },
+  { desc: 'mid century pyrex bowl', value_index: 18 }
 ];
 /********* **********
   2.0) SImg Class + helper functions
@@ -1213,7 +1198,7 @@ StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
         [1,1], // half full
         [1,2]  // full
       ],
-      tile_size : 24,
+      tile_size : conf.tile_size,
       walkables: [0, 1],
       data: save_obj.map_data,
       parse_data : (map, tData, tile, i) => {
@@ -1341,7 +1326,7 @@ StateMachine.states.boot = {
   init: function(sm) {
     // set up sm.pool
     sm.pool = new ObjPool({
-      count: conf.MAX_OBJECTS.total, w: 24, h: 24, sheets:[simg_pool_customer, simg_pool_worker]
+      count: conf.MAX_OBJECTS.total, w: conf.tile_size, h: conf.tile_size, sheets:[simg_pool_customer, simg_pool_worker]
     });
     // check for saves in local storage + load or create a saves and set up sm.money and sm.map in the process
     //localStorage.clear();
@@ -1583,22 +1568,26 @@ StateMachine.states.floor = {
   pointer : function(sm, x, y, e) {
     const data = sm.current.data;
     const tile = sm.map.getByPX(x, y);
-    if( tile ){
+
+    if( tile && data.tile_sel != null ){
+      data.tile_sel = null;
+      console.log('deselected')
+      return;
+    }
+    
+    if( tile && data.tile_sel === null ){
       data.tile_sel = tile;
       console.log('tile pos: ' + tile.x + ',' + tile.y + ' ( i ' + tile.i + ')' );
-      //tile.data.items.forEach(((item)=>{
-      //  console.log('  ' + item.desc + ' $' +item.price);
-      //}));
+      return;
     }
-     
+    
     if(!tile){
       data.tile_sel = null;
       console.log('non map area clicked at : ' + x + ',' + y);  
       sm.button_options.click_check( x, y );
+      return;
     }
-
-    console.log(data)
-     
+ 
   },
 
   init: function(sm) {
@@ -1652,9 +1641,9 @@ StateMachine.states.floor = {
     ctx.fillText('%FULL: ', 10, 420);
     const full = sm.get_percent_full();
     ctx.fillStyle = '#afafaf';
-    ctx.fillRect(24 * 2 + 10, 420, 120, 10);
+    ctx.fillRect(conf.tile_size * 2 + 10, 420, 120, 10);
     ctx.fillStyle = '#00af00';
-    ctx.fillRect(24 * 2 + 10, 420, 120 * full.per, 10);
+    ctx.fillRect(conf.tile_size * 2 + 10, 420, 120 * full.per, 10);
     
     // tile_sel?
     if(data.tile_sel){

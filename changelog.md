@@ -28,7 +28,7 @@
 ## R2 () - User UI, Gameplay improvements
 * (pending) have a staff state that will be used to higher, fire, and view status of workers
 
-## R1 () - Button Class, main menu, save manager, and options states
+## R1 ( done 09/07/2026 ) - Button Class, main menu, save manager, and options states
 * start a button class
 * Simg assets for Buttons in general
 * start a main menu state
@@ -47,7 +47,6 @@
 * Simg asset for main menu title
 * common conf.palette used for all SImg assets
 * display info about a tile when it is clicked
-* (pending) - have options for changing tile state ( clear, build shelf)
 
 ## R0 ( done 09/01/2026 ) - Very basic core idea of the game started
 * starting out with the code that I worked out at jsFiddle
