@@ -17,6 +17,8 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
   -7.3 customer      - customer AI script
 -8.0 UI              - User Interface API
   -8.1 UI.Button     - A Button class used in menus or as a stand alone object
+  -8.2 UI.ButtonGrid - A Grid of Button Objects
+  -8.3 UI.Menu       - A Menu class that is a collection of UI features such as Buttons
 -9.0 StateMachine    - The State Machine of the game
   -9.1 boot          - sets up the map, and other aspects of the game state
   -9.2 main_menu     - the main menu / title state
@@ -1135,6 +1137,101 @@ const UI = {};
   UI.Button = Button;
 };
 /********* **********
+  8.2) UI.ButtonGrid
+********** *********/
+{
+  class ButtonGrid {
+    constructor (opt={}) {
+      Object.assign(this, {
+         x:0, y:0, bw:3, bh: 3, bsize: 32, on_click: function(){
+         
+         }
+      }, opt);
+      this.buttons = [];
+      this.active_button = null;
+      let i = 0;
+      const len = this.bw * this.bh;
+      const button_grid = this;
+      while(i < len){
+        const x = i % this.bw;
+        const y = Math.floor(i / this.bh);
+        const button = new UI.Button({
+          x: this.x, y: this.y, w: this.bsize, h: this.bsize, 
+          on_click: function(button, x, y){
+            button_grid.set_active(button);
+          }
+        });
+        button.active = false;
+        button.gi = i;
+        button.gx = x;
+        button.gy = y;
+        this.buttons[i] = button;
+        i += 1;
+      }
+      this.set_active(null);
+      this.pos_buttons();
+    }
+    click_check (x=-1, y=-1) {
+     const len = this.bw * this.bh;
+      let i = 0;
+      while(i < len){
+        const b = this.buttons[i];
+        b.click_check(x, y);
+        i += 1;
+      }
+      this.on_click(x, y);
+    } 
+    pos_buttons () {
+      const len = this.bw * this.bh;
+      let i = 0;
+      while(i < len){
+        const b = this.buttons[i];
+        b.x = this.x + b.gx * this.bsize;
+        b.y = this.y + b.gy * this.bsize;
+        i += 1;
+      }
+    }
+    set_active  ( button=null ) {
+      const len = this.bw * this.bh;
+      let i = 0;
+      while(i < len){
+        this.buttons[i].active = false;
+        i += 1;
+      }
+      this.active_button = null;
+      if(typeof button === 'object' && button != null){
+        button.active = true;
+        this.active_button = button;
+      }
+      if(typeof button === 'number' && !isNaN(button) ){
+        const button = this.buttons[button];
+        button.active = true;
+        this.active_button = button;
+      }
+    }
+    render(ctx){
+      const len = this.bw * this.bh;
+      let i = 0;
+      while(i < len){
+        this.buttons[i].render(ctx);
+        i += 1;
+      }    
+    }
+  }
+  UI.ButtonGrid = ButtonGrid;
+}
+/********* **********
+  8.3) UI.Menu
+********** *********/
+{
+  class Menu {
+    constructor (opt={}) {
+      
+    }
+  }
+  UI.Menu = Menu;
+}
+/********* **********
   9.0) StateMachine
 ********** *********/
 const StateMachine = {
@@ -1361,6 +1458,7 @@ StateMachine.states.boot = {
         0: null, 1: null, 2: null
       };
     }
+    
     // start main_menu state, or jump directly into floor state at this point.
     StateMachine.set_state('floor');
     //StateMachine.set_state('save_manager');
@@ -1573,7 +1671,8 @@ StateMachine.states.save_manager = {
 StateMachine.states.floor = {
 
   data: {
-     tile_sel : null
+     tile_sel : null,
+     bg: null
   },
 
   pointer : function(sm, x, y, e) {
@@ -1596,6 +1695,7 @@ StateMachine.states.floor = {
       data.tile_sel = null;
       console.log('non map area clicked at : ' + x + ',' + y);  
       sm.button_options.click_check( x, y );
+      data.bg.click_check(x, y);
       return;
     }
  
@@ -1606,6 +1706,20 @@ StateMachine.states.floor = {
     const canvas = sm.canvas;
 
     data.tile_sel = null;
+
+    data.bg = new UI.ButtonGrid({
+      x: sm.map.sx + conf.tile_size * sm.map.width + 5,
+      y: sm.map.sy,
+      on_click: function(x, y){
+        console.log('a grid button was clicked');
+        const button = this.active_button;
+        if(button){
+          console.log(button.gi);
+        }
+      }
+    });
+    
+    console.log(data.bg);
 
     sm.button_options = sm.button_options || new UI.Button({
       x: canvas.width - 64, y: 32, w: 32,  h:32,
@@ -1643,12 +1757,18 @@ StateMachine.states.floor = {
 
     sm.map.render_grid(ctx);
     sm.pool.render(ctx);
+    
+    // render tile mutation button grid
+    data.bg.render(ctx)
+    
+    // display money
     ctx.fillStyle = 'white';
     ctx.textBaseline = 'top';
     let sx =  conf.tile_size * 0 + sm.map.sx;
     ctx.font = '10px monospace';
     ctx.fillText(sm.format_money( sm.money ), sx, 10);
     
+    // display %full
     sx = conf.tile_size * 4 + sm.map.sx;
     ctx.font = '10px monospace';
     ctx.fillText('%FULL:', sx, 10);
@@ -1675,6 +1795,7 @@ StateMachine.states.floor = {
       }));
     }
 
+    // options button
     sm.button_options.render(ctx);
     
   }

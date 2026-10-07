@@ -27,6 +27,10 @@
 ## RX () - Staff state
 * (pending) have a staff state that will be used to higher, fire, ect
 
+## RX () - UI.ScrollBox
+* (pending) - have a UI.ScrollBox class 
+* (pending) - buttons can be used to scroll threw components
+
 ## R2 () - Utils methods, UI api, UI.Menu, map mutation
 * did away with revision string being displayed in floor state
 * adjusted size of tiles from 24px to 27px
@@ -34,9 +38,8 @@
 * start a utils object that will contain methods used in code base starting with a bounding box method
 * start a UI api starting with absorbing button into it as UI.Button
 * utils.distance method
-
-* (pending) - start a menu class that will be a collection of buttons and other UI features
-* (pending) - a menu should be able to scroll via scroll buttons at least
+* start a UI.Menu class that will be a collection of buttons and other UI features
+* Have a UI.ButtonGrid class that is a Grid of UI.Buttons
 * (pending) - have a tile menu in the floor state to the right of the map
 * (pending) - have tile mutation buttons for the map (clear, and build shelf)
 
