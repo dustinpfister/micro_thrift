@@ -79,6 +79,9 @@ utils.bounding_box = function(a={}, b={}) {
       a.x + a.w < b.x ||
       a.x > b.x + b.w )
 };
+utils.distance = function (x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+};
 /********* **********
   3.0) SImg Class + helper functions
 ********** *********/
