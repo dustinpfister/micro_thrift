@@ -2,26 +2,27 @@
 Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 
 -1.0 Conf            - a config object containing constants used throughout the codebase
--2.0 SImg            - Allows for storing image assets in source
-  -2.1 tile_assets   - SImg assets used to tile the WMap instance
-  -2.2 pool_assets   - SImg assets used to skin ObjPool objects
-  -2.3 button_assets - Simg assets used to skin buttons
-  -2.4 main title    - Simg assets for title / main menu
--3.0 ObjPool         - An Object pool class used for sprite objects
--4.0 Pathfinder      - Path finding based on EasyStar
--5.0 WMap            - A world Map system
--6.0 AI              - Artificial intelligence of sm.pool objects
-  -6.1 main          - main AI script that applies to all objects
-  -6.2 worker        - worker AI script 
-  -6.3 customer      - customer AI script
--7.0 Button          - A Button class used for menus
--8.0 StateMachine    - The State Machine of the game
-  -8.1 boot          - sets up the map, and other aspects of the game state
-  -8.2 main_menu     - the main menu / title state
-  -8.3 save_manager  - the save manager state
-  -8.4 floor         - shows the current state of the 'floor' of the thrift store
-  -8.5 options state - options or pause state
--9.0 App loop        - Main application loop of the game
+-2.0 Utils           - general utility functions
+-3.0 SImg            - Allows for storing image assets in source
+  -3.1 tile_assets   - SImg assets used to tile the WMap instance
+  -3.2 pool_assets   - SImg assets used to skin ObjPool objects
+  -3.3 button_assets - Simg assets used to skin buttons
+  -3.4 main title    - Simg assets for title / main menu
+-4.0 ObjPool         - An Object pool class used for sprite objects
+-5.0 Pathfinder      - Path finding based on EasyStar
+-6.0 WMap            - A world Map system
+-7.0 AI              - Artificial intelligence of sm.pool objects
+  -7.1 main          - main AI script that applies to all objects
+  -7.2 worker        - worker AI script 
+  -7.3 customer      - customer AI script
+-8.0 Button          - A Button class used for menus
+-9.0 StateMachine    - The State Machine of the game
+  -9.1 boot          - sets up the map, and other aspects of the game state
+  -9.2 main_menu     - the main menu / title state
+  -9.3 save_manager  - the save manager state
+  -9.4 floor         - shows the current state of the 'floor' of the thrift store
+  -9.5 options state - options or pause state
+-10.0 App loop        - Main application loop of the game
 
 ********** *********/
 /********* **********
@@ -66,7 +67,19 @@ conf.items = [
   { desc: 'mid century pyrex bowl', value_index: 18 }
 ];
 /********* **********
-  2.0) SImg Class + helper functions
+  2.0) Utils
+********** *********/
+const utils = {};
+utils.bounding_box = function(a={}, b={}) {
+    return !(
+      a.y + a.h < b.y ||
+      a.y > b.y + b.h ||
+
+      a.x + a.w < b.x ||
+      a.x > b.x + b.w )
+};
+/********* **********
+  3.0) SImg Class + helper functions
 ********** *********/
 const create_canvas_sheet = (img) => {
     const canvas = document.createElement('canvas');
@@ -106,7 +119,7 @@ class SImg {
 };
 
 /********* **********
-  2.1) tile_assets
+  3.1) tile_assets
 ********** *********/
 const simg_tiles_null = new SImg( {
   width: 64, frame_width: 16,
@@ -155,7 +168,7 @@ const simg_tiles_stock = new SImg( {
   ] } );
 
 /********* **********
-  2.2) pool_assets
+  3.2) pool_assets
 ********** *********/
 const simg_pool_customer = new SImg( {
   width: 16, frame_width: 16, px_size: 16, pallette: conf.palette_1,
@@ -199,7 +212,7 @@ const simg_pool_worker = new SImg( {
     7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
   ] } );
 /********* **********
-  2.3) button_assets
+  3.3) button_assets
 ********** *********/
 const simg_buttons = new SImg( {
   width: 16, frame_width: 16, px_size: 16, pallette: conf.palette_1,
@@ -235,7 +248,7 @@ const simg_buttons_options = new SImg( {
     3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
   ]});
 /********* **********
-  2.4) main title
+  3.4) main title
 ********** *********/
 const simg_main_title = new SImg( {
   width: 40, frame_width: 40, px_size: 16, pallette: conf.palette_1,
@@ -259,7 +272,7 @@ const simg_main_title = new SImg( {
   ]});
 
 /********* **********
-  3.0) ObjPool CLASS
+  4.0) ObjPool CLASS
 ********** *********/
 class ObjPool {
   //constructor ( count = 10, simg = simg_tiles_null ) {
@@ -345,7 +358,7 @@ class ObjPool {
 }
 
 /********* **********
-  4.0) PathFinder
+  5.0) PathFinder
 ********** *********/
 // This is based on what I found here
 // PathFinder License: MIT.
@@ -832,7 +845,7 @@ class PathFinder {
 }
 
 /********* **********
-  5.0) WMap world map system
+  6.0) WMap world map system
 ********** *********/
 
 class WMap {
@@ -996,7 +1009,7 @@ class WMap {
 }
 
 /********* **********
-  6.0) AI
+  7.0) AI
 ********** *********/
 const AI = {}
 // move if there is path data
@@ -1029,7 +1042,7 @@ AI.target_task = (sm, obj, target_types = [3,4,5], call_back=function(){} ) => {
   }
 };
 /********* **********
-  6.1) Main AI
+  7.1) Main AI
 ********** *********/
 AI.main = function( sm, obj ){
   // always move if there is path data
@@ -1038,7 +1051,7 @@ AI.main = function( sm, obj ){
   AI[obj.data.type](sm, obj);
 };
 /********* **********
-  6.2) Worker AI
+  7.2) Worker AI
 ********** *********/
 AI.worker = function(sm, obj){
   const path = obj.data.path, 
@@ -1059,7 +1072,7 @@ AI.worker = function(sm, obj){
   });
 };
 /********* **********
-  6.3) customer AI
+  7.3) customer AI
 ********** *********/
 AI.customer = function(sm, obj){
   const path = obj.data.path;
@@ -1082,16 +1095,8 @@ AI.customer = function(sm, obj){
   });
 };
 /********* **********
-  7.0) Button
+  8.0) Button
 ********** *********/
-const bounding_box = function(a={}, b={}) {
-    return !(
-      a.y + a.h < b.y ||
-      a.y > b.y + b.h ||
-      a.x + a.w < b.x ||
-      a.x > b.x + b.w )
-};
-
 class Button {
 
   constructor (opt={}) {
@@ -1103,7 +1108,7 @@ class Button {
   }
   
   click_check (x=-1, y=-1) {
-    if( bounding_box(this, {x: x, y: y, w: 1, h: 1}) ){
+    if( utils.bounding_box(this, {x: x, y: y, w: 1, h: 1}) ){
       this.on_click(this, x, y);   
     }
   }
@@ -1123,7 +1128,7 @@ class Button {
   
 };
 /********* **********
-  8.0) StateMachine
+  9.0) StateMachine
 ********** *********/
 const StateMachine = {
     map:null, money:null, lu:null,
@@ -1317,7 +1322,7 @@ StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
 };
 
 /********* **********
-  8.1) boot state
+  9.1) boot state
 ********** *********/
 StateMachine.states.boot = {
 
@@ -1331,7 +1336,6 @@ StateMachine.states.boot = {
     // check for saves in local storage + load or create a saves and set up sm.money and sm.map in the process
     //localStorage.clear();
     const saves = localStorage.getItem('micro_store_saves');
-    console.log(saves)
     if(saves){
       console.log('looks like we have saves in the local storage of this client');
       sm.saves = JSON.parse(saves);
@@ -1363,7 +1367,7 @@ StateMachine.states.boot = {
 };
 
 /********* **********
-  8.2) main_menu State
+  9.2) main_menu State
 ********** *********/
 StateMachine.states.main_menu = {
   pointer : function(sm, x, y, e) {
@@ -1422,7 +1426,7 @@ StateMachine.states.main_menu = {
   }
 };
 /********* **********
-  8.3) save_manager State
+  9.3) save_manager State
 ********** *********/
 StateMachine.states.save_manager = {
   pointer : function(sm, x, y, e) {
@@ -1557,7 +1561,7 @@ StateMachine.states.save_manager = {
   }
 };
 /********* **********
-  8.4) floor State
+  9.4) floor State
 ********** *********/
 StateMachine.states.floor = {
 
@@ -1670,7 +1674,7 @@ StateMachine.states.floor = {
 
 };
 /********* **********
-  8.5) options State
+  9.5) options State
 ********** *********/
 StateMachine.states.options = {
   pointer : function(sm, x, y, e) {
@@ -1711,7 +1715,7 @@ StateMachine.states.options = {
 };
 
 /********* **********
-  9.0) APP LOOP
+  10.0) APP LOOP
 ********** *********/
 const canvas = StateMachine.canvas = document.getElementById('the_canvas');
 const ctx = StateMachine.ctx = canvas.getContext('2d');

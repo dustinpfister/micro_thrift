@@ -31,11 +31,13 @@
 * did away with revision string being displayed in floor state
 * adjusted size of tiles from 24px to 27px
 * moved %full bar to top of canvas with money displayed
-
-* (pending) - have a tile menu that will show up when a tile is clicked in floor state
-* (pending) - start a utils object that will contain methods used in codebase
-* (pending) - utils.bounding\_box method
+* start a utils object that will contain methods used in code base starting with a bounding box method
 * (pending) - utils.distance method
+* (pending) - start a menu class that will be a collection of buttons and other UI features
+* (pending) - a menu should be able to scroll via scroll buttons at least
+* (pending) - have a tile menu in the floor state to the right of the map
+* (pending) - have tile mutation buttons for the map (clear, and build shelf)
+
 
 ## R1 ( done 09/07/2026 ) - Button Class, main menu, save manager, and options states
 * start a button class
