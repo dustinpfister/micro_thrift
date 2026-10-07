@@ -1187,7 +1187,7 @@ StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
   sm.money = save_obj.money;
   sm.map = new WMap({
       width: 16, height: 16,
-      sx: 10, sy: 30,
+      sx: 5, sy: 48 - 5,
       default_type: 1,
       sheets: [simg_tiles_null, simg_tiles_stock],
       type_index: [
