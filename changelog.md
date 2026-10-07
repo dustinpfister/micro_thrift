@@ -4,8 +4,7 @@
 * (pending) - donor object type stated
 * (pending) - donations worker role started
 
-## RX () - Staff state
-* (pending) - can use Staff state to hire and fire
+## RX () - Staff state update
 * (pending) - can use Staff state to set hours and schedule
 * (pending) - workers then spawn by way of game time system and set schedule 
 * (pending) - can set primary role when working out schedule
@@ -25,8 +24,19 @@
 * (pending) - customer AI : choice of buying an item or not based on personal pref set on spawn
 * (pending) - customers will leave map after making buying an item, or after a timeout
 
-## R2 () - User UI, Gameplay improvements
-* (pending) have a staff state that will be used to higher, fire, and view status of workers
+## RX () - Staff state
+* (pending) have a staff state that will be used to higher, fire, ect
+
+## R2 () - Utils methods, Menu class, Tile Menu
+* did away with revision string being displayed in floor state
+
+* (pending) - adjust size of tiles and position of map so that it takes up much of the canvas in floor state
+* (pending) - moved %full bar to top of canvas with money displayed
+
+* (pending) - have a tile menu that will show up when a tile is clicked in floor state
+* (pending) - start a utils object that will contain methods used in codebase
+* (pending) - utils.bounding\_box method
+* (pending) - utils.distance method
 
 ## R1 ( done 09/07/2026 ) - Button Class, main menu, save manager, and options states
 * start a button class

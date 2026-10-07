@@ -28,7 +28,7 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
   1.0) Config
 ********** *********/
 const conf = {
-  R: '1'
+  R: '2A'
 };
 conf.tile_size = 24;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
@@ -1662,8 +1662,6 @@ StateMachine.states.floor = {
     }
 
     sm.button_options.render(ctx);
-    
-    sm.render_revision_string(ctx, 10, canvas.height - 15 );
     
   }
 
