@@ -27,11 +27,13 @@
 ## RX () - Staff state
 * (pending) have a staff state that will be used to higher, fire, ect
 
-## R2 () - Utils methods, Menu class, Tile Menu
+## R2 () - Utils methods, UI api, UI.Menu, map mutation
 * did away with revision string being displayed in floor state
 * adjusted size of tiles from 24px to 27px
 * moved %full bar to top of canvas with money displayed
 * start a utils object that will contain methods used in code base starting with a bounding box method
+* start a UI api starting with absorbing button into it as UI.Button
+
 * (pending) - utils.distance method
 * (pending) - start a menu class that will be a collection of buttons and other UI features
 * (pending) - a menu should be able to scroll via scroll buttons at least

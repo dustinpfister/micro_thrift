@@ -15,7 +15,8 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
   -7.1 main          - main AI script that applies to all objects
   -7.2 worker        - worker AI script 
   -7.3 customer      - customer AI script
--8.0 Button          - A Button class used for menus
+-8.0 UI              - User Interface API
+  -8.1 UI.Button     - A Button class used in menus or as a stand alone object
 -9.0 StateMachine    - The State Machine of the game
   -9.1 boot          - sets up the map, and other aspects of the game state
   -9.2 main_menu     - the main menu / title state
@@ -1095,37 +1096,40 @@ AI.customer = function(sm, obj){
   });
 };
 /********* **********
-  8.0) Button
+  8.0) UI - User Interface API
 ********** *********/
-class Button {
-
-  constructor (opt={}) {
-     Object.assign(this, {
-       x:0, y:0, w: 128, h: 32, 
-       simg: null, frame_index: 0,
-       on_click: function(){}
-     }, opt);
-  }
-  
-  click_check (x=-1, y=-1) {
-    if( utils.bounding_box(this, {x: x, y: y, w: 1, h: 1}) ){
-      this.on_click(this, x, y);   
+const UI = {};
+/********* **********
+  8.1) UI.Button
+********** *********/
+{
+  class Button {
+    constructor (opt={}) {
+       Object.assign(this, {
+         x:0, y:0, w: 128, h: 32, 
+         simg: null, frame_index: 0,
+         on_click: function(){}
+       }, opt);
     }
-  }
-  
-  render (ctx) {
-    if(!this.simg){
-      ctx.fillStyle = 'white';
-      ctx.fillRect(this.x, this.y, this.w, this.h);
-    }   
-    if(this.simg){
-      this.simg.render_frame(ctx, 
-        Math.floor(this.frame_index || 0), 
-        this.x, this.y, this.w, this.h
-      );
+    click_check (x=-1, y=-1) {
+      if( utils.bounding_box(this, {x: x, y: y, w: 1, h: 1}) ){
+        this.on_click(this, x, y);   
+      }
+    } 
+    render (ctx) {
+      if(!this.simg){
+        ctx.fillStyle = 'white';
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+      }   
+      if(this.simg){
+        this.simg.render_frame(ctx, 
+          Math.floor(this.frame_index || 0), 
+          this.x, this.y, this.w, this.h
+        );
+      }
     }
-  }
-  
+  };
+  UI.Button = Button;
 };
 /********* **********
   9.0) StateMachine
@@ -1377,7 +1381,7 @@ StateMachine.states.main_menu = {
   init: function(sm) {
     const canvas = sm.canvas;
 
-    sm.button_play = sm.button_play || new Button({
+    sm.button_play = sm.button_play || new UI.Button({
       x: canvas.width / 2 - 128, y: canvas.height / 2, w: 256,  h:64,
       //simg: simg_buttons, frame_index: 0,
       on_click : function(button, x, y){
@@ -1391,7 +1395,7 @@ StateMachine.states.main_menu = {
       }
     });
     
-    sm.button_start_sm = sm.button_start_sm || new Button({
+    sm.button_start_sm = sm.button_start_sm || new UI.Button({
       x: canvas.width / 2 - 128, y: canvas.height / 2 + 96, w: 256,  h:64,
       //simg: simg_buttons, frame_index: 0,
       on_click : function(button, x, y){
@@ -1440,7 +1444,7 @@ StateMachine.states.save_manager = {
   },
   init: function(sm) {
   
-    sm.button_mm2 = sm.button_mm2 || new Button({
+    sm.button_mm2 = sm.button_mm2 || new UI.Button({
       x: 32, y: 32, w: 128,  h:64,
       simg: simg_buttons_options, frame_index: 0,
       on_click : function(button, x, y){
@@ -1448,7 +1452,7 @@ StateMachine.states.save_manager = {
       }
     });
 
-    sm.button_sm_copy = sm.button_sm_copy || new Button({
+    sm.button_sm_copy = sm.button_sm_copy || new UI.Button({
       x: 40, y: canvas.height * 0.50, w: 128,  h:64,
       //simg: simg_buttons_options, frame_index: 0,
       on_click : function(button, x, y){
@@ -1463,7 +1467,7 @@ StateMachine.states.save_manager = {
       }
     });
 
-    sm.button_sm_delete = sm.button_sm_delete || new Button({
+    sm.button_sm_delete = sm.button_sm_delete || new UI.Button({
       x: 40 + 128 + 10, y: canvas.height * 0.50, w: 128,  h:64,
       //simg: simg_buttons_options, frame_index: 0,
       on_click : function(button, x, y){
@@ -1480,7 +1484,7 @@ StateMachine.states.save_manager = {
 
     ['auto', 0, 1, 2].forEach((slot_key, i)=>{
       const key = 'button_save_' + slot_key ;
-      sm[key] = sm[key] || new Button({
+      sm[key] = sm[key] || new UI.Button({
         x: 40 + (16 + 125) * i, y: canvas.height * 0.25, w: 125,  h:96,
         //simg: simg_buttons_options, frame_index: 0,
         on_click : function(button, x, y){
@@ -1600,7 +1604,7 @@ StateMachine.states.floor = {
 
     data.tile_sel = null;
 
-    sm.button_options = sm.button_options || new Button({
+    sm.button_options = sm.button_options || new UI.Button({
       x: canvas.width - 64, y: 32, w: 32,  h:32,
       simg: simg_buttons, frame_index: 0,
       on_click : function(button, x, y){
@@ -1687,7 +1691,7 @@ StateMachine.states.options = {
   
     const canvas = sm.canvas;
 
-    sm.button_continue = sm.button_continue || new Button({
+    sm.button_continue = sm.button_continue || new UI.Button({
       x: canvas.width / 2 - 128 * 1.10, y: canvas.height / 2, w: 128,  h:64,
       simg: simg_buttons_options, frame_index: 0,
       on_click : function(button, x, y){
@@ -1695,7 +1699,7 @@ StateMachine.states.options = {
       }
     });
     
-    sm.button_main_menu = sm.button_main_menu || new Button({
+    sm.button_main_menu = sm.button_main_menu || new UI.Button({
       x: canvas.width / 2 + 128 * 0.10, y: canvas.height / 2, w: 128,  h:64,
       simg: simg_buttons_options, frame_index: 1,
       on_click : function(button, x, y){
