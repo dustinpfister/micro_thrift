@@ -30,7 +30,7 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 const conf = {
   R: '2A'
 };
-conf.tile_size = 24;
+conf.tile_size = 27;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
   'red', 'lime', 'blue', 'yellow', 'cyan', 'purple'];
 conf.SAVE_DEFAULT = {
