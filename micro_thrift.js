@@ -1634,30 +1634,33 @@ StateMachine.states.floor = {
     sm.pool.render(ctx);
     ctx.fillStyle = 'white';
     ctx.textBaseline = 'top';
-    ctx.font = '15px monospace';
-    ctx.fillText(sm.format_money( sm.money ), 10, 10);
-    
+    let sx =  conf.tile_size * 0 + sm.map.sx;
     ctx.font = '10px monospace';
-    ctx.fillText('%FULL: ', 10, 420);
+    ctx.fillText(sm.format_money( sm.money ), sx, 10);
+    
+    sx = conf.tile_size * 4 + sm.map.sx;
+    ctx.font = '10px monospace';
+    ctx.fillText('%FULL:', sx, 10);
     const full = sm.get_percent_full();
     ctx.fillStyle = '#afafaf';
-    ctx.fillRect(conf.tile_size * 2 + 10, 420, 120, 10);
+    ctx.fillRect(sx + 45, 9, 120, 10);
     ctx.fillStyle = '#00af00';
-    ctx.fillRect(conf.tile_size * 2 + 10, 420, 120 * full.per, 10);
+    ctx.fillRect(sx + 45, 9, 120 * full.per, 10);
     
     // tile_sel?
     if(data.tile_sel){
       const tile = data.tile_sel;
+      const sx = conf.tile_size * 16 + sm.map.sx + 5;
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'top';
       ctx.font = '15px monospace';
-      ctx.fillText('selected tile: ', 400, 100);
-      ctx.fillText('pos: ' + tile.x + ', ' + tile.y, 420, 115);
+      ctx.fillText('selected tile: ', sx, 100);
+      ctx.fillText('pos: ' + tile.x + ', ' + tile.y, sx, 115);
       ctx.font = '10px monospace';
       tile.data.items.forEach(((item, i)=>{
         const y = 135 + 15 * i;
         const desc = item.desc.substr(0, 10);
-        ctx.fillText(i + ')  ' + desc + ' $' + item.price, 420, y);
+        ctx.fillText(i + ')  ' + desc + ' $' + item.price, sx, y);
       }));
     }
 

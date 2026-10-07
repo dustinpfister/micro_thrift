@@ -30,7 +30,7 @@
 ## R2 () - Utils methods, Menu class, Tile Menu
 * did away with revision string being displayed in floor state
 * adjusted size of tiles from 24px to 27px
-* (pending) - moved %full bar to top of canvas with money displayed
+* moved %full bar to top of canvas with money displayed
 
 * (pending) - have a tile menu that will show up when a tile is clicked in floor state
 * (pending) - start a utils object that will contain methods used in codebase
