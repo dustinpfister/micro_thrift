@@ -41,7 +41,8 @@
 * start a UI.Menu class that will be a collection of buttons and other UI features
 * Have a UI.ButtonGrid class that is a Grid of UI.Buttons
 
-* (pending) - new SImg assets for tile mutation menu in floor state
+* (pending) - have an init method for a button grid that can be used to set up buttons
+
 * (pending) - have tile action buttons for the map (clear, build shelf, wall, and info)
 
 ## R1 ( done 09/07/2026 ) - Button Class, main menu, save manager, and options states

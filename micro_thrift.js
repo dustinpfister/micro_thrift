@@ -1143,9 +1143,9 @@ const UI = {};
   class ButtonGrid {
     constructor (opt={}) {
       Object.assign(this, {
-         x:0, y:0, bw:3, bh: 3, bsize: 32, on_click: function(){
-         
-         }
+         x:0, y:0, bw:3, bh: 3, bsize: 32, 
+         on_click: function(){},
+         init: function(){},
       }, opt);
       this.buttons = [];
       this.active_button = null;
@@ -1154,7 +1154,7 @@ const UI = {};
       const button_grid = this;
       while(i < len){
         const x = i % this.bw;
-        const y = Math.floor(i / this.bh);
+        const y = Math.floor(i / this.bw);
         const button = new UI.Button({
           x: this.x, y: this.y, w: this.bsize, h: this.bsize, 
           on_click: function(button, x, y){
@@ -1166,6 +1166,7 @@ const UI = {};
         button.gx = x;
         button.gy = y;
         this.buttons[i] = button;
+        this.init(button);
         i += 1;
       }
       this.set_active(null);
@@ -1724,8 +1725,21 @@ StateMachine.states.floor = {
     data.bg = new UI.ButtonGrid({
       x: sm.map.sx + conf.tile_size * sm.map.width + 5,
       y: sm.map.sy,
+      bw: 3, bh: 1,
+      init: function(button){
+        button.simg = simg_tiles_null;
+        if(button.gi < 2){
+          button.frame_index = 1 + button.gi;
+        }
+        if(button.gi == 2){
+          button.simg = simg_tiles_stock;
+          button.frame_index = 0;
+        }
+      },
       on_click: function(x, y){
         const button = this.active_button;
+        
+        
         if(button){
           console.log('active button: ' + button.gi);
           console.log(button);
