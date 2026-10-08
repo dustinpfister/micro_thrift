@@ -43,8 +43,7 @@
 * have an init method for a button grid that can be used to set up buttons
 * can click a non map area to deselect tile mutation option
 * a map.set_type method would be nice
-
-* (pending) - if a tile mutation option is selected change that tile when it is clicked
+* if a tile mutation option is selected change that tile when it is clicked
 
 ## R1 ( done 09/07/2026 ) - Button Class, main menu, save manager, and options states
 * start a button class

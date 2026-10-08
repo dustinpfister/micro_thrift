@@ -1714,13 +1714,14 @@ StateMachine.states.floor = {
       data.tile_sel = null;
       tile.data.count = 0;
       tile.data.items = [];
-      tile.type_index = ab.gi + 1;
-      //tile.frame_index = 0;
+      
+      sm.map.set_type(ab.gi + 1, tile.x, tile.y);
+      
+      //tile.type_index = ab.gi + 1;
       console.log(tile);
       return;
     }
     
-
     if( tile && data.tile_sel != null ){
       data.tile_sel = null;
       console.log('deselected')
