@@ -305,6 +305,18 @@ class ObjPool {
     }
   }
   
+  reset(){
+    let i = 0;
+    while(i < this.count){
+      const obj = this.objects[i];
+      obj.active = false;
+      obj.x = 0;
+      obj.y = 0;
+      obj.data = {};
+      i += 1;
+    }  
+  };
+  
   get_inactive(){
     let i = 0;
     while(i < this.count){
@@ -1749,6 +1761,8 @@ StateMachine.states.floor = {
     const canvas = sm.canvas;
 
     data.tile_sel = null;
+    
+    sm.pool.reset();
 
     data.bg = new UI.ButtonGrid({
       x: sm.map.sx + conf.tile_size * sm.map.width + 5,
@@ -1765,9 +1779,7 @@ StateMachine.states.floor = {
         }
       },
       on_click: function(x, y){
-        const button = this.active_button;
-        
-        
+        const button = this.active_button;  
         if(button){
           console.log('active button: ' + button.gi);
           console.log(button);

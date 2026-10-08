@@ -44,6 +44,8 @@
 * can click a non map area to deselect tile mutation option
 * a map.set_type method would be nice
 * if a tile mutation option is selected change that tile when it is clicked
+* have an ObjPool.reset method
+* call sm.pool.reset in init method of floor state
 
 * (pending) - rename sm.pool to sm.people 
 * (pending) - have paths update on each move now for sm.people
