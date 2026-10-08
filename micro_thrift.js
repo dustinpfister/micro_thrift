@@ -1402,27 +1402,30 @@ StateMachine.get_percent_full = function(){
 };
 
 StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
+  tile.data.count = tile.data.count === undefined ? 0 : tile.data.count;
+  // return out if for some reason we are stocking at a tile that is not a shelf
   if( !(StateMachine.is_shelf(tile)) ){
-    console.warn('can only stock at a shelf tile!');
+    return;
+  }
+  if(tile.data.count < conf.MAX_SHELF_ITEMS){
+    const n = tile.data.count += 1;
+    const item = conf.items[ item_index ];
+    tile.type_index = 3;
+    tile.type_index = n > 0 ? 4 : tile.type_index;
+    tile.type_index = n >= 5 ? 5 : tile.type_index;
+    tile.frame_index = tile.type_index - 3;
+    tile.data.items.push({
+      item_index: item_index,
+      price_index: price_index,
+      desc: item.desc,
+      price: conf.price_options[ price_index ]
+    });
     return;
   }
   if(tile.data.count >= conf.MAX_SHELF_ITEMS){
-     console.warn('shelf is maxed out');
+     // what to do if the shelf is maxed out
      return;
   }
-  tile.data.count = tile.data.count === undefined ? 0 : tile.data.count;
-  const n = tile.data.count += 1;
-  const item = conf.items[ item_index ];
-  tile.type_index = 3;
-  tile.type_index = n > 0 ? 4 : tile.type_index;
-  tile.type_index = n >= 5 ? 5 : tile.type_index;
-  tile.frame_index = tile.type_index - 3;
-  tile.data.items.push({
-    item_index: item_index,
-    price_index: price_index,
-    desc: item.desc,
-    price: conf.price_options[ price_index ]
-  });
 };
 
 /********* **********
@@ -1719,8 +1722,6 @@ StateMachine.states.floor = {
       }
     });
     
-    console.log(data.bg);
-
     sm.button_options = sm.button_options || new UI.Button({
       x: canvas.width - 64, y: 32, w: 32,  h:32,
       simg: simg_buttons, frame_index: 0,
