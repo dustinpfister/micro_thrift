@@ -865,9 +865,7 @@ class WMap {
     this.sy = opt.sy === undefined ? 20 : opt.sy;
     this.tile_size = opt.tile_size || 32;
     this.sheets = opt.sheets || [ simg_tiles_null ];
-    this.type_index = opt.type_index || [ 
-      [0,0], [0,1], [0,3]
-    ];
+    this.type_index = opt.type_index || [ [0,0] ];
     this.walkables = opt.walkables || [0];
     this.grid = [];
     let i = 0;
@@ -884,11 +882,21 @@ class WMap {
       if(opt.data){
         this.parse_data(this, opt.data[i], tile, i);
       }
-      tile.sheet_index = this.type_index[ tile.type_index ][0];
-      tile.frame_index = this.type_index[ tile.type_index ][1];
+      //tile.sheet_index = this.type_index[ tile.type_index ][0];
+      //tile.frame_index = this.type_index[ tile.type_index ][1];
+      
       this.grid.push(tile);
+      this.set_type(tile.type_index, tile.x, tile.y);
       i += 1;
     }
+  }
+
+  set_type(type_index=0, x, y){
+     const tile = this.get(x, y);
+     tile.type_index = type_index;
+     const rec = this.type_index[ tile.type_index ];
+     tile.sheet_index = this.type_index[ tile.type_index ][0];
+     tile.frame_index = this.type_index[ tile.type_index ][1];
   }
 
   get(ix, y){
@@ -1700,6 +1708,18 @@ StateMachine.states.floor = {
   pointer : function(sm, x, y, e) {
     const data = sm.current.data;
     const tile = sm.map.getByPX(x, y);
+    
+    const ab = data.bg.active_button;
+    if( tile && ab){
+      data.tile_sel = null;
+      tile.data.count = 0;
+      tile.data.items = [];
+      tile.type_index = ab.gi + 1;
+      //tile.frame_index = 0;
+      console.log(tile);
+      return;
+    }
+    
 
     if( tile && data.tile_sel != null ){
       data.tile_sel = null;
