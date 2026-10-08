@@ -1198,6 +1198,10 @@ const UI = {};
         this.buttons[i].active = false;
         i += 1;
       }
+      if(this.active_button === button){
+        this.active_button = null;
+        return;
+      }
       this.active_button = null;
       if(typeof button === 'object' && button != null){
         button.active = true;
@@ -1213,7 +1217,14 @@ const UI = {};
       const len = this.bw * this.bh;
       let i = 0;
       while(i < len){
-        this.buttons[i].render(ctx);
+        const b = this.buttons[i];
+        b.render(ctx);  
+        if(this.active_button){
+          if(this.active_button === b ){
+            ctx.fillStyle = 'rgba(255,0,0,0.25)';
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+          }
+        }
         i += 1;
       }    
     }
@@ -1714,10 +1725,10 @@ StateMachine.states.floor = {
       x: sm.map.sx + conf.tile_size * sm.map.width + 5,
       y: sm.map.sy,
       on_click: function(x, y){
-        console.log('a grid button was clicked');
         const button = this.active_button;
         if(button){
-          console.log(button.gi);
+          console.log('active button: ' + button.gi);
+          console.log(button);
         }
       }
     });
@@ -1786,11 +1797,11 @@ StateMachine.states.floor = {
       ctx.fillStyle = 'white';
       ctx.textBaseline = 'top';
       ctx.font = '15px monospace';
-      ctx.fillText('selected tile: ', sx, 100);
-      ctx.fillText('pos: ' + tile.x + ', ' + tile.y, sx, 115);
+      ctx.fillText('selected tile: ', sx, 200);
+      ctx.fillText('pos: ' + tile.x + ', ' + tile.y, sx, 215);
       ctx.font = '10px monospace';
       tile.data.items.forEach(((item, i)=>{
-        const y = 135 + 15 * i;
+        const y = 235 + 15 * i;
         const desc = item.desc.substr(0, 10);
         ctx.fillText(i + ')  ' + desc + ' $' + item.price, sx, y);
       }));
