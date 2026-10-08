@@ -45,6 +45,16 @@
 * a map.set_type method would be nice
 * if a tile mutation option is selected change that tile when it is clicked
 
+* (pending) - rename sm.pool to sm.people 
+* (pending) - have paths update on each move now for sm.people
+* (pending) - have a way to find out if an sm.people object is stuck
+* (pending) - an sm.people object will become inactive if stuck
+
+* (pending) - have changing a tile cost money
+* (pending) - have a new sm.build\_sprites object pool
+* (pending) - use sm.build\_sprites to display money spent when a tile is changed
+
+
 ## R1 ( done 09/07/2026 ) - Button Class, main menu, save manager, and options states
 * start a button class
 * Simg assets for Buttons in general
