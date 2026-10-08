@@ -1158,6 +1158,7 @@ const UI = {};
         const button = new UI.Button({
           x: this.x, y: this.y, w: this.bsize, h: this.bsize, 
           on_click: function(button, x, y){
+            button_grid.button_clicked = true;
             button_grid.set_active(button);
           }
         });
@@ -1175,12 +1176,18 @@ const UI = {};
     click_check (x=-1, y=-1) {
      const len = this.bw * this.bh;
       let i = 0;
+      this.button_clicked = false;
       while(i < len){
         const b = this.buttons[i];
         b.click_check(x, y);
         i += 1;
       }
-      this.on_click(x, y);
+      if(this.button_clicked){
+        this.on_click(x, y);
+      }
+      if(!this.button_clicked){
+        this.set_active(null);
+      }
     } 
     pos_buttons () {
       const len = this.bw * this.bh;
