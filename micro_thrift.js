@@ -11,7 +11,7 @@ Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
 -4.0 ObjPool         - An Object pool class used for sprite objects
 -5.0 Pathfinder      - Path finding based on EasyStar
 -6.0 WMap            - A world Map system
--7.0 AI              - Artificial intelligence of sm.pool objects
+-7.0 AI              - Artificial intelligence of sm.people objects
   -7.1 main          - main AI script that applies to all objects
   -7.2 worker        - worker AI script 
   -7.3 customer      - customer AI script
@@ -51,7 +51,7 @@ conf.SAVE_DEFAULT = {
     185: 'b02',186: 'b02',187: 'b02',188: 'b02',189: 'b02',190: 'b02',191: 'b02'
   }
 };
-// max number of display objects used for sm.pool
+// max number of display objects used for sm.people
 conf.MAX_OBJECTS = {
   worker: 3,
   customer: 1
@@ -1398,12 +1398,12 @@ StateMachine.render_revision_string = function(ctx, x, y){
   ctx.fillText('MicroThrift Rev:' + conf.R, x, y );
 };
 
-// spawn an object_type for sm.pool
+// spawn an object_type for sm.people
 StateMachine.spawn = function ( object_type='customer' ) {
   const sm = this;
-  const type_count = sm.pool.get_data_count('type', object_type);
+  const type_count = sm.people.get_data_count('type', object_type);
   if(type_count < conf.MAX_OBJECTS[object_type]){
-    const obj = sm.pool.get_inactive();
+    const obj = sm.people.get_inactive();
     if(obj){
       const map = sm.map;
       obj.active = true;
@@ -1411,7 +1411,7 @@ StateMachine.spawn = function ( object_type='customer' ) {
       const pos = map.getRandomByType([1]);
       obj.x = map.sx + pos.x * map.tile_size;
       obj.y = map.sy + pos.y * map.tile_size;  
-      obj.simg = sm.pool.sheets[object_type === 'customer' ? 0 : 1];
+      obj.simg = sm.people.sheets[object_type === 'customer' ? 0 : 1];
     }
   }
 };
@@ -1475,8 +1475,8 @@ StateMachine.states.boot = {
   pointer : function(sm, x, y, e) {},
 
   init: function(sm) {
-    // set up sm.pool
-    sm.pool = new ObjPool({
+    // set up sm.people
+    sm.people = new ObjPool({
       count: conf.MAX_OBJECTS.total, w: conf.tile_size, h: conf.tile_size, sheets:[simg_pool_customer, simg_pool_worker]
     });
     // check for saves in local storage + load or create a saves and set up sm.money and sm.map in the process
@@ -1762,7 +1762,7 @@ StateMachine.states.floor = {
 
     data.tile_sel = null;
     
-    sm.pool.reset();
+    sm.people.reset();
 
     data.bg = new UI.ButtonGrid({
       x: sm.map.sx + conf.tile_size * sm.map.width + 5,
@@ -1804,7 +1804,7 @@ StateMachine.states.floor = {
     sm.spawn('customer');
     sm.spawn('worker');
     
-    sm.pool.update(ctx, 0, function(obj){
+    sm.people.update(ctx, 0, function(obj){
       obj.data.path = obj.data.path || [];
       if(obj.active){
         AI.main(sm, obj);
@@ -1822,7 +1822,7 @@ StateMachine.states.floor = {
     const data = sm.current.data;
 
     sm.map.render_grid(ctx);
-    sm.pool.render(ctx);
+    sm.people.render(ctx);
     
     // render tile mutation button grid
     data.bg.render(ctx)
