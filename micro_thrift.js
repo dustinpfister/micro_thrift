@@ -1,5 +1,7 @@
 /********* **********
-Micro thrift - By Dustin Pfister - https://github.com/dustinpfister/micro_thrift
+Micro thrift 
+c 2026 by Dustin Pfister (GPL 3.0) 
+https://github.com/dustinpfister/micro_thrift
 
 -1.0 Conf            - a config object containing constants used throughout the codebase
 -2.0 Utils           - general utility functions
@@ -53,7 +55,7 @@ conf.SAVE_DEFAULT = {
 };
 // max number of display objects used for sm.people
 conf.MAX_OBJECTS = {
-  worker: 3,
+  worker: 1,
   customer: 1
 };
 conf.MAX_SHELF_ITEMS = 10;
@@ -998,7 +1000,10 @@ class WMap {
         return obj.type_index === n;
       })
     });
-    return options[ Math.floor( Math.random() * options.length ) ];
+    if(options.length > 0){
+      return options[ Math.floor( Math.random() * options.length ) ];
+    }
+    return null;
   }
 
   px_to_pos (px, py) {
@@ -1042,12 +1047,59 @@ const AI = {}
 AI.move = (sm, obj) => {
   const path = obj.data.path;
   const map = sm.map;
+  if(!path){
+    return;
+  }
   if(obj.active && path.length > 0){
     const pos = path.pop();
     obj.x = map.sx + pos.x * map.tile_size;
     obj.y = map.sy + pos.y * map.tile_size;
   }
 };
+
+// set a random target of one of the given types to 
+// obj.data.target. If no target can be found set to null;
+AI.set_rnd_target = (sm, obj, target_types = [3,4,5] ) => {
+  let target = obj.data.target = obj.data.target || null;
+  // if there is all ready a target return that
+  if(target){
+    return target;
+  }
+  let a = sm.map.getRandomByType( target_types );
+  if(a){
+    return obj.data.target = a;
+  }
+  return obj.data.target = null;
+};
+
+// set obj.path to the current target, leave path as an
+// empty array if something goes wrong.
+AI.set_path_to_target = (sm, obj) => {
+  // always default to no path
+  obj.data.path = [];
+  const target = obj.data.target;
+  // return out of function if no target
+  if(!target){
+    return Promise.reject('no target');;
+  }
+  const options = sm.map.get_border_tiles(target.x, target.y, [1] );
+  if(options.length == 0){
+     return Promise.reject('no walk tile options');
+  }
+  if(options.length > 0){
+    const pos1 = sm.map.px_to_pos(obj.x, obj.y);
+    const i = Math.floor( Math.random() * options.length );
+
+    const floor_tile = options[ i ];
+    return sm.map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
+    .then( (path_new) => {
+      if(path_new){
+        obj.data.path = path_new;
+      }
+    });
+  }
+};
+
 // find or move to a target tile, run custom callback when in range
 AI.target_task = (sm, obj, target_types = [3,4,5], call_back=function(){} ) => {
   const map = sm.map, path = obj.data.path;
@@ -1063,7 +1115,9 @@ AI.target_task = (sm, obj, target_types = [3,4,5], call_back=function(){} ) => {
     const floor_tile = floor_tile_options[ Math.floor( Math.random() * floor_tile_options.length ) ];    
     map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
     .then((path_new)=>{
-      obj.data.path = path_new;
+      if(path_new){
+        obj.data.path = path_new;
+      }
     });
   }
 };
@@ -1082,20 +1136,53 @@ AI.main = function( sm, obj ){
 AI.worker = function(sm, obj){
   const path = obj.data.path, 
   map = sm.map;
+
+  if(!obj.data.target){
+    AI.set_rnd_target(sm, obj, [3,45])
+  }
+
+  if(obj.data.target){
+    AI.set_path_to_target(sm, obj)
+    .then(()=>{      
+      AI.move(sm, obj);
+      const t = obj.data.target;
+      const pos1 = map.px_to_pos(obj.x, obj.y);
+      const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
+      if(d <= 2){
+        const target = obj.data.target;
+        // !!!R0 : just basic random selection for now
+        const item_index = Math.floor( conf.items.length * Math.random() );
+        const item_gen = conf.items[ item_index ];
+        // !!!R0 : pricing items by value_index +- 3 randomly
+        let price_index = item_gen.value_index - 3 + Math.round( Math.random() * 6 );
+        price_index  = price_index < 0 ? 0 : price_index;
+        price_index = price_index >= conf.price_options.length ? conf.price_options.length - 1 : price_index; 
+        StateMachine.stock_item(target, item_index, price_index);
+        obj.data.target = null;
+      }
+    })
+    .catch((e)=>{
+      console.log(e)
+    })
+    //console.log(obj.data.path);
+    //AI.move(sm, obj);
+  }
+
   // target task for worker
+  // commented out old R0 AI.target_task code for worker
+  /*
   AI.target_task(sm, obj, [3,4,5], function(obj, target){
     // !!!R0 : just basic random selection for now
     const item_index = Math.floor( conf.items.length * Math.random() );
     const item_gen = conf.items[ item_index ];
-  
     // !!!R0 : pricing items by value_index +- 3 randomly
     let price_index = item_gen.value_index - 3 + Math.round( Math.random() * 6 );
     price_index  = price_index < 0 ? 0 : price_index;
     price_index = price_index >= conf.price_options.length ? conf.price_options.length - 1 : price_index; 
-  
     StateMachine.stock_item(target, item_index, price_index);
     obj.data.shelf_target = null;
   });
+  */
 };
 /********* **********
   7.3) customer AI
@@ -1726,11 +1813,7 @@ StateMachine.states.floor = {
       data.tile_sel = null;
       tile.data.count = 0;
       tile.data.items = [];
-      
       sm.map.set_type(ab.gi + 1, tile.x, tile.y);
-      
-      //tile.type_index = ab.gi + 1;
-      console.log(tile);
       return;
     }
     

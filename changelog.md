@@ -47,10 +47,13 @@
 * have an ObjPool.reset method
 * call sm.pool.reset in init method of floor state
 * rename sm.pool to sm.people 
+* have paths update on each move now for sm.people
 
-* (pending) - have paths update on each move now for sm.people
 * (pending) - have a way to find out if an sm.people object is stuck
 * (pending) - an sm.people object will become inactive if stuck
+* (pending)
+
+
 * (pending) - have changing a tile cost money
 * (pending) - have a new sm.build\_sprites object pool
 * (pending) - use sm.build\_sprites to display money spent when a tile is changed
