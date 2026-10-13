@@ -48,10 +48,10 @@
 * call sm.pool.reset in init method of floor state
 * rename sm.pool to sm.people 
 * have paths update on each move now for sm.people
+* AI: walk_target pos for people objects
 
-* (pending) - have a way to find out if an sm.people object is stuck
-* (pending) - an sm.people object will become inactive if stuck
-* (pending)
+* (pending) - AI: have a way to find out if an sm.people object is stuck
+* (pending) - AI: an sm.people object will become inactive if stuck
 
 
 * (pending) - have changing a tile cost money

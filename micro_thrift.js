@@ -1077,6 +1077,7 @@ AI.set_rnd_target = (sm, obj, target_types = [3,4,5] ) => {
 AI.set_path_to_target = (sm, obj) => {
   // always default to no path
   obj.data.path = [];
+  let walk_target = obj.data.walk_target = obj.data.walk_target || null;
   const target = obj.data.target;
   // return out of function if no target
   if(!target){
@@ -1086,11 +1087,13 @@ AI.set_path_to_target = (sm, obj) => {
   if(options.length == 0){
      return Promise.reject({ e: '2', mess: 'no walk tile options'});
   }
-  if(options.length > 0){
-    const pos1 = sm.map.px_to_pos(obj.x, obj.y);
+  if(walk_target === null){
     const i = Math.floor( Math.random() * options.length );
-    const floor_tile = options[ i ];
-    return sm.map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
+    walk_target = obj.data.walk_target = options[i];
+  }
+
+  const pos1 = sm.map.px_to_pos(obj.x, obj.y);
+  return sm.map.getPath( walk_target.x, walk_target.y, pos1.x, pos1.y)
     .then( (path_new) => {
       if(path_new){
         obj.data.path = path_new;
@@ -1100,7 +1103,6 @@ AI.set_path_to_target = (sm, obj) => {
         return Promise.reject({ e: '3', mess: 'null path'});
       }
     });
-  }
 };
 
 // find or move to a target tile, run custom callback when in range
@@ -1148,7 +1150,7 @@ AI.worker = function(sm, obj){
     AI.set_path_to_target(sm, obj)
     .then(()=>{
       AI.move(sm, obj);
-      const t = obj.data.target;
+      const t = obj.data.walk_target;
       const pos1 = map.px_to_pos(obj.x, obj.y);
       const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
       if(d <= 2){
@@ -1162,6 +1164,7 @@ AI.worker = function(sm, obj){
         price_index = price_index >= conf.price_options.length ? conf.price_options.length - 1 : price_index; 
         StateMachine.stock_item(target, item_index, price_index);
         obj.data.target = null;
+        obj.data.walk_target = null;
       }
     })
     .catch((res)=>{
@@ -1570,7 +1573,9 @@ StateMachine.states.boot = {
   init: function(sm) {
     // set up sm.people
     sm.people = new ObjPool({
-      count: conf.MAX_OBJECTS.total, w: conf.tile_size, h: conf.tile_size, sheets:[simg_pool_customer, simg_pool_worker]
+      count: conf.MAX_OBJECTS.total, 
+      w: conf.tile_size, h: conf.tile_size, 
+      sheets:[simg_pool_customer, simg_pool_worker]
     });
     // check for saves in local storage + load or create a saves and set up sm.money and sm.map in the process
     //localStorage.clear();
@@ -1894,7 +1899,10 @@ StateMachine.states.floor = {
     sm.spawn('worker');
     
     sm.people.update(ctx, 0, function(obj){
-      obj.data.path = obj.data.path || [];
+      const d = obj.data;
+      d.path = d.path || [];
+      d.target = d.target || null;
+      d.walk_target = d.walk_target || null; 
       if(obj.active){
         AI.main(sm, obj);
       }
