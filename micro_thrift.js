@@ -1080,21 +1080,24 @@ AI.set_path_to_target = (sm, obj) => {
   const target = obj.data.target;
   // return out of function if no target
   if(!target){
-    return Promise.reject('no target');;
+    return Promise.reject({e: '1', mess: 'no target'});;
   }
   const options = sm.map.get_border_tiles(target.x, target.y, [1] );
   if(options.length == 0){
-     return Promise.reject('no walk tile options');
+     return Promise.reject({ e: '2', mess: 'no walk tile options'});
   }
   if(options.length > 0){
     const pos1 = sm.map.px_to_pos(obj.x, obj.y);
     const i = Math.floor( Math.random() * options.length );
-
     const floor_tile = options[ i ];
     return sm.map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
     .then( (path_new) => {
       if(path_new){
         obj.data.path = path_new;
+        return Promise.resolve({ e: '0', mess: 'path set' });
+      }
+      if(!path_new){
+        return Promise.reject({ e: '3', mess: 'null path'});
       }
     });
   }
@@ -1134,16 +1137,16 @@ AI.main = function( sm, obj ){
   7.2) Worker AI
 ********** *********/
 AI.worker = function(sm, obj){
-  const path = obj.data.path, 
-  map = sm.map;
+  const path = obj.data.path, map = sm.map;
 
   if(!obj.data.target){
-    AI.set_rnd_target(sm, obj, [3,45])
+    AI.set_rnd_target(sm, obj, [3,4,5]);
   }
 
   if(obj.data.target){
+     
     AI.set_path_to_target(sm, obj)
-    .then(()=>{      
+    .then(()=>{
       AI.move(sm, obj);
       const t = obj.data.target;
       const pos1 = map.px_to_pos(obj.x, obj.y);
@@ -1161,8 +1164,11 @@ AI.worker = function(sm, obj){
         obj.data.target = null;
       }
     })
-    .catch((e)=>{
-      console.log(e)
+    .catch((res)=>{
+      console.log('e' + res.e);
+      if(res.e === '3'){  
+        obj.data.target = null
+      }
     })
     //console.log(obj.data.path);
     //AI.move(sm, obj);
