@@ -34,7 +34,7 @@ https://github.com/dustinpfister/micro_thrift
   1.0) Config
 ********** *********/
 const conf = {
-  R: '2A'
+  R: '2'
 };
 conf.tile_size = 27;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
@@ -55,8 +55,8 @@ conf.SAVE_DEFAULT = {
 };
 // max number of display objects used for sm.people
 conf.MAX_OBJECTS = {
-  worker: 10,
-  customer: 1
+  worker: 1,
+  customer: 3
 };
 conf.MAX_SHELF_ITEMS = 10;
 conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.worker + conf.MAX_OBJECTS.customer;
@@ -1708,8 +1708,6 @@ StateMachine.states.main_menu = {
         sm.set_state('save_manager');
       }
     });
-  
-   console.log( await sm.map.stuck_check(1,0) );
    
   },
   update: function(sm, t) {},

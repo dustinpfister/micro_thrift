@@ -1,35 +1,7 @@
 # micro_thrift change log
 
-## RX () - donor object type, donations worker role
-* (pending) - donor object type stated
-* (pending) - donations worker role started
-
-## RX () - Staff state update
-* (pending) - can use Staff state to set hours and schedule
-* (pending) - workers then spawn by way of game time system and set schedule 
-* (pending) - can set primary role when working out schedule
-
-## RX () - worker roles, cashier
-* (pending) - a worker can have a role \( stock, cashier \) 
-* (pending) - have a cashout tile 
-* (pending) - customers can now only buy an item at a cashout tile that is active by a worker
-* (pending) - a worker will change roles based on need
-
-## RX () - Game Time System
-* (pending) - start a game time system
-* (pending) - have customers spawn by way of game time system
-
-## RX () - Customer AI buying choice and spawn locations
-* (pending) - customers will spawn at fixed location at top of map
-* (pending) - customer AI : choice of buying an item or not based on personal pref set on spawn
-* (pending) - customers will leave map after making buying an item, or after a timeout
-
-## RX () - Staff state
+## R3 () - Staff state
 * (pending) have a staff state that will be used to higher, fire, ect
-
-## RX () - UI.ScrollBox
-* (pending) - have a UI.ScrollBox class 
-* (pending) - buttons can be used to scroll threw components
 
 ## R2 () - Utils methods, UI api, UI.Menu, map mutation
 * did away with revision string being displayed in floor state
@@ -53,12 +25,6 @@
 * have people objects become active only at spawn locations
 * new stuck\_check method that works by finding a path to a spawn location
 * both workers and customers no longer use old AI.target\_task method
-
-* (pending) - simg: new simg asset for spawn location
-* (pending) - have changing a tile cost money
-* (pending) - have a new sm.build\_sprites object pool
-* (pending) - use sm.build\_sprites to display money spent when a tile is changed
-
 
 ## R1 ( done 09/07/2026 ) - Button Class, main menu, save manager, and options states
 * start a button class
