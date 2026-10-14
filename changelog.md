@@ -2,10 +2,13 @@
 
 ## R3 () - GameTime, Staff state, Budget state
 * added a game update method that can be called in any state beyond just floor state.
-* (pedning) - start a GameTime system that will translate real time to game time
+
+* (pending) - start a GameTime system that will translate real time to game time
 * (pending) - start a staff state that will be used to higher, fire, ect
 * (pending) - start a Budget state to display what is going on with money
 * (pending) - workers will now cost money over time
+* (pending) - have a tab selection type menu at the top of the screen to switch between floor, staff, and budget states
+* (pending) - make the options state one of the tab menu states
 
 ## R2 ( done 09/14/2026 ) - Utils methods, UI api, map mutation
 * did away with revision string being displayed in floor state
