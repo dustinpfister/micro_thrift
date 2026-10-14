@@ -52,9 +52,7 @@
 * map: pos\_to\_px method
 * have people objects become active only at spawn locations
 * new stuck\_check method that works by finding a path to a spawn location
-
-* (pending) - AI: workers no longer get stuck at full shelfs
-* (pending) - AI: both workers and customers no longer use old AI.target\_task method
+* both workers and customers no longer use old AI.target\_task method
 
 * (pending) - simg: new simg asset for spawn location
 * (pending) - have changing a tile cost money

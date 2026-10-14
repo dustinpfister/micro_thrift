@@ -55,7 +55,7 @@ conf.SAVE_DEFAULT = {
 };
 // max number of display objects used for sm.people
 conf.MAX_OBJECTS = {
-  worker: 1,
+  worker: 10,
   customer: 1
 };
 conf.MAX_SHELF_ITEMS = 10;
@@ -1128,7 +1128,7 @@ AI.set_path_to_target = (sm, obj) => {
   if(!target){
     return Promise.reject({e: '1', mess: 'no target'});;
   }
-  const options = sm.map.get_border_tiles(target.x, target.y, [1] );
+  const options = sm.map.get_border_tiles( target.x, target.y, [1] );
   if(options.length == 0){
      return Promise.reject({ e: '2', mess: 'no walk tile options'});
   }
@@ -1149,27 +1149,6 @@ AI.set_path_to_target = (sm, obj) => {
     });
 };
 
-// find or move to a target tile, run custom callback when in range
-AI.target_task = (sm, obj, target_types = [3,4,5], call_back=function(){} ) => {
-  const map = sm.map, path = obj.data.path;
-  // acvive, no path, but WE DO have a target
-  if(obj.active && path.length === 0 && obj.data.shelf_target){
-    call_back(obj, obj.data.shelf_target);
-  }
-  // active, no path, and no target
-  if(obj.active && path.length === 0 && !obj.data.shelf_target){
-    const pos1 = map.px_to_pos(obj.x, obj.y);
-    const target = obj.data.shelf_target = map.get_random_by_type( target_types );
-    const floor_tile_options = map.get_border_tiles(target.x, target.y, [1] );
-    const floor_tile = floor_tile_options[ Math.floor( Math.random() * floor_tile_options.length ) ];    
-    map.get_path( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
-    .then((path_new)=>{
-      if(path_new){
-        obj.data.path = path_new;
-      }
-    });
-  }
-};
 /********* **********
   7.1) Main AI
 ********** *********/
@@ -1183,7 +1162,7 @@ AI.main = function( sm, obj ){
   7.2) Worker AI
 ********** *********/
 AI.worker = function(sm, obj){
-  const path = obj.data.path, map = sm.map;
+  const map = sm.map;
 
   if(!obj.data.target){
     AI.set_rnd_target(sm, obj, [3,4,5]);
@@ -1191,8 +1170,32 @@ AI.worker = function(sm, obj){
 
   if(obj.data.target){
     AI.set_path_to_target(sm, obj)
+    .then(()=>{
+      AI.move(sm, obj);
+      const t = obj.data.walk_target;
+      const pos1 = map.px_to_pos(obj.x, obj.y);
+      const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
+      if(d === 0){
+        const target = obj.data.target;
+        // !!!R0 : just basic random selection for now
+        const item_index = Math.floor( conf.items.length * Math.random() );
+        const item_gen = conf.items[ item_index ];
+        // !!!R0 : pricing items by value_index +- 3 randomly
+        let price_index = item_gen.value_index - 3 + Math.round( Math.random() * 6 );
+        price_index  = price_index < 0 ? 0 : price_index;
+        price_index = price_index >= conf.price_options.length ? conf.price_options.length - 1 : price_index; 
+        StateMachine.stock_item(target, item_index, price_index);
+        obj.data.target = null;
+        obj.data.walk_target = null;
+      }
+    })
     .catch((res)=>{
       console.log('e' + res.e);
+      if(res.e === '2'){
+        console.log('no walkabule border tiles for target');
+        obj.data.target = null;
+        obj.data.walk_target = null;
+      }
       if(res.e === '3'){
         const pos = sm.map.px_to_pos(obj.x, obj.y);
         sm.map.stuck_check(pos.x, pos.y).then((stuck)=>{
@@ -1208,66 +1211,69 @@ AI.worker = function(sm, obj){
           }
         })
       }
-    })
-    .then(()=>{
-      AI.move(sm, obj);
-      const t = obj.data.walk_target;
-      const pos1 = map.px_to_pos(obj.x, obj.y);
-      const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
-      if(d <= 2){
-        const target = obj.data.target;
-        // !!!R0 : just basic random selection for now
-        const item_index = Math.floor( conf.items.length * Math.random() );
-        const item_gen = conf.items[ item_index ];
-        // !!!R0 : pricing items by value_index +- 3 randomly
-        let price_index = item_gen.value_index - 3 + Math.round( Math.random() * 6 );
-        price_index  = price_index < 0 ? 0 : price_index;
-        price_index = price_index >= conf.price_options.length ? conf.price_options.length - 1 : price_index; 
-        StateMachine.stock_item(target, item_index, price_index);
-        obj.data.target = null;
-        obj.data.walk_target = null;
-      }
     });
   }
-
-  // target task for worker
-  // commented out old R0 AI.target_task code for worker
-  /*
-  AI.target_task(sm, obj, [3,4,5], function(obj, target){
-    // !!!R0 : just basic random selection for now
-    const item_index = Math.floor( conf.items.length * Math.random() );
-    const item_gen = conf.items[ item_index ];
-    // !!!R0 : pricing items by value_index +- 3 randomly
-    let price_index = item_gen.value_index - 3 + Math.round( Math.random() * 6 );
-    price_index  = price_index < 0 ? 0 : price_index;
-    price_index = price_index >= conf.price_options.length ? conf.price_options.length - 1 : price_index; 
-    StateMachine.stock_item(target, item_index, price_index);
-    obj.data.shelf_target = null;
-  });
-  */
+  
 };
 /********* **********
   7.3) customer AI
 ********** *********/
 AI.customer = function(sm, obj){
-  const path = obj.data.path;
   const map = sm.map;
-  // target task for customer
-  AI.target_task(sm, obj, [3,4,5], function(obj, target){
-    const items = target.data.items;
-    if(items.length > 0){
-       const n = target.data.count = target.data.count -= 1;
-       const buying = items.pop();
-       target.type_index = 3;
-       target.type_index = n > 0 ? 4 : target.type_index;
-       target.type_index = n >= 5 ? 5 : target.type_index;
-       target.frame_index = target.type_index - 3;
-       // buying the item
-       sm.money += buying.price;
-       sm.money = parseFloat( sm.money.toFixed(2) )
-    }
-    obj.data.shelf_target = null;
-  });
+  const target = obj.data.target;
+  if(!target){
+    AI.set_rnd_target(sm, obj, [3,4,5]);
+  }
+
+  if(target){
+    AI.set_path_to_target(sm, obj)
+    .then(()=>{
+      AI.move(sm, obj);
+    
+      const t = obj.data.walk_target;
+      const pos1 = map.px_to_pos(obj.x, obj.y);
+      const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
+      if(d === 0){
+        const items = target.data.items;
+        if(items.length > 0){
+          const n = target.data.count = target.data.count -= 1;
+          // buy the item
+          const buying = items.pop();
+          target.type_index = 3;
+          target.type_index = n > 0 ? 4 : target.type_index;
+          target.type_index = n >= 5 ? 5 : target.type_index;
+          target.frame_index = target.type_index - 3;
+          sm.money += buying.price;
+          sm.money = parseFloat( sm.money.toFixed(2) )
+        }
+        obj.data.target = null;
+        obj.data.walk_target = null;
+      }
+    })
+    .catch((res)=>{
+      console.log('e' + res.e);
+      if(res.e === '2'){
+        console.log('no walkabule border tiles for target');
+        obj.data.target = null;
+        obj.data.walk_target = null;
+      }
+      if(res.e === '3'){
+        const pos = sm.map.px_to_pos(obj.x, obj.y);
+        sm.map.stuck_check(pos.x, pos.y).then((stuck)=>{
+          if(stuck){
+            console.log('stuck!');
+            obj.active = false;  
+            obj.data = {};
+          }
+          if(!stuck){
+            console.log(' not stuck, so just get a new target ');
+            obj.data.target = null;
+            obj.data.walk_target = null;
+          }
+        })
+      }
+    });
+  }
 };
 /********* **********
   8.0) UI - User Interface API
