@@ -920,19 +920,18 @@ class WMap {
       options.push( this.get_path(loc.x, loc.y, x, y) );
       i += 1;
     }
-    const res = await Promise.any( options )
+    return await Promise.any( options )
     .catch(()=>{
-      return false;
+      return true;
     })
     .then((path)=>{
       if(path === null){
-        return false;
-      }
-      if(path.length > 0){
         return true;
       }
+      if(path.length > 0){
+        return false;
+      }
     });
-    return res;
   }
 
   set_spawn_locations(){
@@ -1119,8 +1118,7 @@ AI.set_rnd_target = (sm, obj, target_types = [3,4,5] ) => {
   return obj.data.target = null;
 };
 
-// set obj.path to the current target, leave path as an
-// empty array if something goes wrong.
+// set obj.path to the current walk_target. return a promise and resolve or reject with mess and e codes
 AI.set_path_to_target = (sm, obj) => {
   // always default to no path
   obj.data.path = [];
@@ -1138,7 +1136,6 @@ AI.set_path_to_target = (sm, obj) => {
     const i = Math.floor( Math.random() * options.length );
     walk_target = obj.data.walk_target = options[i];
   }
-
   const pos1 = sm.map.px_to_pos(obj.x, obj.y);
   return sm.map.get_path( walk_target.x, walk_target.y, pos1.x, pos1.y)
     .then( (path_new) => {
@@ -1193,8 +1190,25 @@ AI.worker = function(sm, obj){
   }
 
   if(obj.data.target){
-     
     AI.set_path_to_target(sm, obj)
+    .catch((res)=>{
+      console.log('e' + res.e);
+      if(res.e === '3'){
+        const pos = sm.map.px_to_pos(obj.x, obj.y);
+        sm.map.stuck_check(pos.x, pos.y).then((stuck)=>{
+          if(stuck){
+            console.log('stuck!');
+            obj.active = false;  
+            obj.data = {};
+          }
+          if(!stuck){
+            console.log(' not stuck, so just get a new target ');
+            obj.data.target = null;
+            obj.data.walk_target = null;
+          }
+        })
+      }
+    })
     .then(()=>{
       AI.move(sm, obj);
       const t = obj.data.walk_target;
@@ -1213,16 +1227,7 @@ AI.worker = function(sm, obj){
         obj.data.target = null;
         obj.data.walk_target = null;
       }
-    })
-    .catch((res)=>{
-      console.log('e' + res.e);
-      if(res.e === '3'){
-        obj.active = false;  
-        obj.data = {};
-      }
-    })
-    //console.log(obj.data.path);
-    //AI.move(sm, obj);
+    });
   }
 
   // target task for worker
