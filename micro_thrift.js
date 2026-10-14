@@ -34,7 +34,7 @@ https://github.com/dustinpfister/micro_thrift
   1.0) Config
 ********** *********/
 const conf = {
-  R: '2'
+  R: '3A'
 };
 conf.tile_size = 27;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
@@ -1530,6 +1530,7 @@ StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
         });
       }
     });
+    sm.people.reset();
 };
 
 StateMachine.pointer = function (e) {
@@ -1626,6 +1627,24 @@ StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
      // what to do if the shelf is maxed out
      return;
   }
+};
+
+StateMachine.game_update = (sm, t) => {
+  sm.spawn('customer');
+  sm.spawn('worker');
+  sm.people.update(ctx, 0, function(obj){
+    const d = obj.data;
+    d.path = d.path || [];
+    d.target = d.target || null;
+    d.walk_target = d.walk_target || null; 
+    if(obj.active){
+      AI.main(sm, obj);
+    }
+  });
+  // update sm.saves.auto
+  sm.saves.auto = sm.create_save();
+  const saves_str = JSON.stringify( sm.saves );
+  localStorage.setItem('micro_store_saves', saves_str);
 };
 
 /********* **********
@@ -1920,7 +1939,7 @@ StateMachine.states.floor = {
 
     data.tile_sel = null;
     
-    sm.people.reset();
+    //sm.people.reset();
 
     data.bg = new UI.ButtonGrid({
       x: sm.map.sx + conf.tile_size * sm.map.width + 5,
@@ -1957,25 +1976,8 @@ StateMachine.states.floor = {
   },
 
   update: function(sm, t) {
-    const map = sm.map;
     
-    sm.spawn('customer');
-    sm.spawn('worker');
-    
-    sm.people.update(ctx, 0, function(obj){
-      const d = obj.data;
-      d.path = d.path || [];
-      d.target = d.target || null;
-      d.walk_target = d.walk_target || null; 
-      if(obj.active){
-        AI.main(sm, obj);
-      }
-    });
-    
-    // update sm.saves.auto
-    sm.saves.auto = sm.create_save();
-    const saves_str = JSON.stringify( sm.saves );
-    localStorage.setItem('micro_store_saves', saves_str);
+    StateMachine.game_update(sm, t);
     
   },
 

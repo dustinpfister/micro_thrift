@@ -1,9 +1,13 @@
 # micro_thrift change log
 
-## R3 () - Staff state
-* (pending) have a staff state that will be used to higher, fire, ect
+## R3 () - GameTime, Staff state, Budget state
+* added a game update method that can be called in any state beyond just floor state.
+* (pedning) - start a GameTime system that will translate real time to game time
+* (pending) - start a staff state that will be used to higher, fire, ect
+* (pending) - start a Budget state to display what is going on with money
+* (pending) - workers will now cost money over time
 
-## R2 () - Utils methods, UI api, UI.Menu, map mutation
+## R2 ( done 09/14/2026 ) - Utils methods, UI api, map mutation
 * did away with revision string being displayed in floor state
 * adjusted size of tiles from 24px to 27px
 * moved %full bar to top of canvas with money displayed
