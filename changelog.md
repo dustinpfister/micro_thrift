@@ -48,11 +48,13 @@
 * call sm.pool.reset in init method of floor state
 * rename sm.pool to sm.people 
 * have paths update on each move now for sm.people
-* AI: walk_target pos for people objects
+* walk_target pos for people objects
 * map: pos\_to\_px method
-* AI: have people objects become active only at spawn locations
+* have people objects become active only at spawn locations
+* new stuck\_check method that works by finding a path to a spawn location
 
 * (pending) - AI: workers no longer get stuck at full shelfs
+* (pending) - AI: both workers and customers no longer use old AI.target\_task method
 
 * (pending) - simg: new simg asset for spawn location
 * (pending) - have changing a tile cost money

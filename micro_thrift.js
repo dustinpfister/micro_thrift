@@ -908,6 +908,33 @@ class WMap {
 
   }
 
+
+  // check if the something is stuck by finding a path to a spawn location
+  // from the given start position
+  async stuck_check (x=0, y=0) {
+    let p_len = this.spawn_locations.length;
+    let i = 0;
+    const options = [];
+    while(i < p_len){
+      const loc = this.spawn_locations[i];
+      options.push( this.get_path(loc.x, loc.y, x, y) );
+      i += 1;
+    }
+    const res = await Promise.any( options )
+    .catch(()=>{
+      return false;
+    })
+    .then((path)=>{
+      if(path === null){
+        return false;
+      }
+      if(path.length > 0){
+        return true;
+      }
+    });
+    return res;
+  }
+
   set_spawn_locations(){
     const map = this;
     map.spawn_locations.forEach( (loc) => {
@@ -991,7 +1018,7 @@ class WMap {
     const pf = new PathFinder();
     const grid = this.get_path_data();
     return new Promise( (resolve, reject)=> {
-      pf.setCallbackFunction( function( a) {
+      pf.setCallbackFunction( function(a) {
         resolve(a);
       });
       pf.setGrid(grid, [0]);
@@ -1616,7 +1643,7 @@ StateMachine.states.boot = {
           save.lu = new Date(save.lu);
         }
       })
-      sm.load_save(sm.saves.auto);
+      sm.load_save( sm.saves.auto );
     }
     if(!saves){
       console.log('no saves found in local storage!');
@@ -1627,9 +1654,9 @@ StateMachine.states.boot = {
     }
     
     // start main_menu state, or jump directly into floor state at this point.
-    StateMachine.set_state('floor');
+    //StateMachine.set_state('floor');
     //StateMachine.set_state('save_manager');
-    //StateMachine.set_state('main_menu');
+    StateMachine.set_state('main_menu');
   },
 
   update: function(sm, t) {},
@@ -1646,7 +1673,7 @@ StateMachine.states.main_menu = {
     sm.button_play.click_check( x, y );
     sm.button_start_sm.click_check( x, y );
   },
-  init: function(sm) {
+  init: async function(sm) {
     const canvas = sm.canvas;
 
     sm.button_play = sm.button_play || new UI.Button({
@@ -1654,7 +1681,7 @@ StateMachine.states.main_menu = {
       //simg: simg_buttons, frame_index: 0,
       on_click : function(button, x, y){
         if(sm.saves.auto){
-          sm.load_save(sm.saves.auto);
+          sm.load_save( sm.saves.auto );
         }
         if(!sm.saves.auto){
           sm.load_save();
@@ -1671,6 +1698,8 @@ StateMachine.states.main_menu = {
       }
     });
   
+   console.log( await sm.map.stuck_check(1,0) );
+   
   },
   update: function(sm, t) {},
   render: function(sm, ctx, canvas) {
