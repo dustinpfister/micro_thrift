@@ -49,11 +49,12 @@
 * rename sm.pool to sm.people 
 * have paths update on each move now for sm.people
 * AI: walk_target pos for people objects
+* map: pos\_to\_px method
+* AI: have people objects become active only at spawn locations
 
-* (pending) - AI: have a way to find out if an sm.people object is stuck
-* (pending) - AI: an sm.people object will become inactive if stuck
+* (pending) - AI: workers no longer get stuck at full shelfs
 
-
+* (pending) - simg: new simg asset for spawn location
 * (pending) - have changing a tile cost money
 * (pending) - have a new sm.build\_sprites object pool
 * (pending) - use sm.build\_sprites to display money spent when a tile is changed

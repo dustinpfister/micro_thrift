@@ -882,6 +882,9 @@ class WMap {
     this.type_index = opt.type_index || [ [0,0] ];
     this.walkables = opt.walkables || [0];
     this.grid = [];
+    this.spawn_locations = opt.spawn_locations || [
+      { x: 0, y: 0, type_index: 0 }
+    ];
     let i = 0;
     const len = this.width * this.height;
     const tile_data = opt.tile_data || [];
@@ -896,16 +899,23 @@ class WMap {
       if(opt.data){
         this.parse_data(this, opt.data[i], tile, i);
       }
-      //tile.sheet_index = this.type_index[ tile.type_index ][0];
-      //tile.frame_index = this.type_index[ tile.type_index ][1];
-      
       this.grid.push(tile);
       this.set_type(tile.type_index, tile.x, tile.y);
       i += 1;
     }
+    
+    this.set_spawn_locations();
+
   }
 
-  set_type(type_index=0, x, y){
+  set_spawn_locations(){
+    const map = this;
+    map.spawn_locations.forEach( (loc) => {
+      map.set_type(loc.type_index, loc.x, loc.y);
+    })
+  }
+
+  set_type( type_index=0, x, y){
      const tile = this.get(x, y);
      tile.type_index = type_index;
      const rec = this.type_index[ tile.type_index ];
@@ -956,15 +966,30 @@ class WMap {
     return options
   }
 
-  getByPX (px, py) {
-    const x = Math.floor( ( px - this.sx ) / this.tile_size);
-    const y = Math.floor( ( py - this.sy ) / this.tile_size);
-    return this.get(x, y);
+  px_to_pos (px, py) {
+    const map = this;
+    return {
+        x: Math.floor( ( px - map.sx ) / map.tile_size ),
+        y: Math.floor( ( py - map.sy ) / map.tile_size )
+    };
   }
 
-  getPath (x1=0, y1=0, x2=0, y2=0) {
+  pos_to_px (x, y){
+    const map = this;
+    return {
+      x : map.sx + x * map.tile_size,
+      y : map.sy + y * map.tile_size
+    };
+  }
+
+  get_by_px (px, py) {
+    const pos = this.px_to_pos(px, py);
+    return this.get(pos.x, pos.y);
+  }
+
+  get_path (x1=0, y1=0, x2=0, y2=0) {
     const pf = new PathFinder();
-    const grid = this.getPathData();
+    const grid = this.get_path_data();
     return new Promise( (resolve, reject)=> {
       pf.setCallbackFunction( function( a) {
         resolve(a);
@@ -975,7 +1000,9 @@ class WMap {
     });
   }
 
-  getPathData () {
+  // get an an array of arrays of numbers for each tile
+  // where 0 is walkabule and 1 is not
+  get_path_data () {
     const types = this.grid.map( (obj) => {
         return obj.type_index;
     });
@@ -994,7 +1021,8 @@ class WMap {
     return data;
   }
 
-  getRandomByType ( types=[0,1] ) {
+  // get a random tile that has one of the type indices in a given array 
+  get_random_by_type ( types=[0,1] ) {
     const options = this.grid.filter(function(obj){
       return types.some(function(n){
         return obj.type_index === n;
@@ -1004,14 +1032,6 @@ class WMap {
       return options[ Math.floor( Math.random() * options.length ) ];
     }
     return null;
-  }
-
-  px_to_pos (px, py) {
-    const map = this;
-    return {
-        x: Math.floor( ( px - map.sx ) / map.tile_size ),
-        y: Math.floor( ( py - map.sy ) / map.tile_size )
-    };
   }
 
   render_grid (ctx ) {
@@ -1065,7 +1085,7 @@ AI.set_rnd_target = (sm, obj, target_types = [3,4,5] ) => {
   if(target){
     return target;
   }
-  let a = sm.map.getRandomByType( target_types );
+  let a = sm.map.get_random_by_type( target_types );
   if(a){
     return obj.data.target = a;
   }
@@ -1093,7 +1113,7 @@ AI.set_path_to_target = (sm, obj) => {
   }
 
   const pos1 = sm.map.px_to_pos(obj.x, obj.y);
-  return sm.map.getPath( walk_target.x, walk_target.y, pos1.x, pos1.y)
+  return sm.map.get_path( walk_target.x, walk_target.y, pos1.x, pos1.y)
     .then( (path_new) => {
       if(path_new){
         obj.data.path = path_new;
@@ -1115,10 +1135,10 @@ AI.target_task = (sm, obj, target_types = [3,4,5], call_back=function(){} ) => {
   // active, no path, and no target
   if(obj.active && path.length === 0 && !obj.data.shelf_target){
     const pos1 = map.px_to_pos(obj.x, obj.y);
-    const target = obj.data.shelf_target = map.getRandomByType( target_types );
+    const target = obj.data.shelf_target = map.get_random_by_type( target_types );
     const floor_tile_options = map.get_border_tiles(target.x, target.y, [1] );
     const floor_tile = floor_tile_options[ Math.floor( Math.random() * floor_tile_options.length ) ];    
-    map.getPath( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
+    map.get_path( floor_tile.x, floor_tile.y, pos1.x, pos1.y)
     .then((path_new)=>{
       if(path_new){
         obj.data.path = path_new;
@@ -1169,8 +1189,9 @@ AI.worker = function(sm, obj){
     })
     .catch((res)=>{
       console.log('e' + res.e);
-      if(res.e === '3'){  
-        obj.data.target = null
+      if(res.e === '3'){
+        obj.active = false;  
+        obj.data = {};
       }
     })
     //console.log(obj.data.path);
@@ -1435,15 +1456,19 @@ StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
       default_type: 1,
       sheets: [simg_tiles_null, simg_tiles_stock],
       type_index: [
-        [0,0], // type 0, sheet 0, frame 0
+        [0,0], // null tile ( index  0, sheet 0, frame 0)
         [0,1], // floor tile
         [0,2], // wall
         [1,0], // empty shelf
         [1,1], // half full
-        [1,2]  // full
+        [1,2], // full
+        [0,3]  // spawn location
+      ],
+      spawn_locations: [
+        { x:11, y:0, type_index: 6 }
       ],
       tile_size : conf.tile_size,
-      walkables: [0, 1],
+      walkables: [0, 1, 6],
       data: save_obj.map_data,
       parse_data : (map, tData, tile, i) => {
         tile.data.count = 0;
@@ -1495,18 +1520,20 @@ StateMachine.render_revision_string = function(ctx, x, y){
 };
 
 // spawn an object_type for sm.people
-StateMachine.spawn = function ( object_type='customer' ) {
+StateMachine.spawn = function ( object_type='customer', spawn_index=0 ) {
   const sm = this;
+  const map = sm.map;
   const type_count = sm.people.get_data_count('type', object_type);
-  if(type_count < conf.MAX_OBJECTS[object_type]){
+  if( type_count < conf.MAX_OBJECTS[object_type] ){
     const obj = sm.people.get_inactive();
+    const spawn_pos = map.spawn_locations[spawn_index];
     if(obj){
-      const map = sm.map;
       obj.active = true;
       obj.data.type = object_type;
-      const pos = map.getRandomByType([1]);
-      obj.x = map.sx + pos.x * map.tile_size;
-      obj.y = map.sy + pos.y * map.tile_size;  
+  
+      const pos = map.pos_to_px(spawn_pos.x, spawn_pos.y);
+      obj.x = pos.x;
+      obj.y = pos.y;
       obj.simg = sm.people.sheets[object_type === 'customer' ? 0 : 1];
     }
   }
@@ -1817,8 +1844,7 @@ StateMachine.states.floor = {
 
   pointer : function(sm, x, y, e) {
     const data = sm.current.data;
-    const tile = sm.map.getByPX(x, y);
-    
+    const tile = sm.map.get_by_px(x, y);
     const ab = data.bg.active_button;
     if( tile && ab){
       data.tile_sel = null;
