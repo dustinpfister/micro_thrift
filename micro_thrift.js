@@ -1191,15 +1191,35 @@ class WMap {
 const AI = {}
 // move if there is path data
 AI.move = (sm, obj) => {
-  const path = obj.data.path;
+  const d = obj.data;
+  const path = d.path;
+  const max_move_frames = sm.max_move_frames || 10;
+  d.move_frame = d.move_frame === undefined ? 0 : d.move_frame;
   const map = sm.map;
   if(!path){
     return;
   }
-  if(obj.active && path.length > 0){
-    const pos = path.pop();
-    obj.x = map.sx + pos.x * map.tile_size;
-    obj.y = map.sy + pos.y * map.tile_size;
+  
+  if(obj.active && path.length > 0 && d.move_frame === 0){
+    d.pos_now = map.px_to_pos( obj.x, obj.y ); 
+    d.pos_next = path.pop();
+    if(d.pos_now.x === d.pos_next.x && d.pos_now.y === d.pos_next.y){
+      d.pos_next = path.pop();
+    }
+    d.move_frame = max_move_frames;
+  }
+  if(obj.active && d.move_frame > 0){
+    d.move_frame -= 1;
+    if( d.move_frame > 0 ){
+     // start + (end - start) * amt;
+      const amt = ( max_move_frames - d.move_frame ) / max_move_frames; 
+      const x = d.pos_now.x + ( d.pos_next.x - d.pos_now.x  ) * amt;
+      const y = d.pos_now.y + ( d.pos_next.y - d.pos_now.y  ) * amt;
+      Object.assign( obj,  map.pos_to_px( x, y ) );
+    }
+    if( d.move_frame === 0 ){
+      Object.assign( obj,  map.pos_to_px( d.pos_next.x, d.pos_next.y ) );
+    }
   }
 };
 
@@ -1271,7 +1291,6 @@ AI.worker = function(sm, obj){
   if(obj.data.target){
     AI.set_path_to_target(sm, obj)
     .then(()=>{
-      AI.move(sm, obj);
       const t = obj.data.walk_target;
       const pos1 = map.px_to_pos(obj.x, obj.y);
       const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
@@ -1328,8 +1347,6 @@ AI.customer = function(sm, obj){
   if(target){
     AI.set_path_to_target(sm, obj)
     .then(()=>{
-      AI.move(sm, obj);
-    
       const t = obj.data.walk_target;
       const pos1 = map.px_to_pos(obj.x, obj.y);
       const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
@@ -1737,14 +1754,16 @@ StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
 StateMachine.game_update = (sm, t) => {
   sm.spawn('customer');
   sm.spawn('worker');
-  sm.people.update(ctx, 0, function(obj){
+  sm.people.update(ctx, t, function(obj){
     const d = obj.data;
     d.path = d.path || [];
     d.target = d.target || null;
-    d.walk_target = d.walk_target || null; 
+    d.walk_target = d.walk_target || null;
+    obj.pps = 0;
     if(obj.active){
       AI.main(sm, obj);
     }
+    
   });
   // update sm.saves.auto
   sm.saves.auto = sm.create_save();

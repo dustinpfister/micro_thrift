@@ -7,7 +7,15 @@
 * sm.time will need to be saved as part of a save state
 * display the game time in floor state
 
+* AI.move now moves objects from one pos to the next by a set number of frames
+
+
 * (pending) - game speed should effect speed of people objects
+* (pending) - pass actual t value when calling people.update
+* (pending) - make use of object pps again with object pools
+
+* (pending) - AI.move pause frames before getting a new next pos
+
 
 * (pending) - start a staff state that will be used to manage workers
 * (pending) - can hire a new worker in staff state
@@ -23,6 +31,8 @@
 * (pending) - make the options state one of the tab menu states
 
 * (pending) - make it so that the player can not clear the spawn location
+
+
 
 ## R2 ( done 09/14/2026 ) - Utils methods, UI api, map mutation
 * did away with revision string being displayed in floor state
