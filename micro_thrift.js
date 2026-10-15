@@ -38,6 +38,7 @@ const conf = {
   R: '3A'
 };
 conf.LOOP_MS_DELAY = 33; // number of ms to delay each frame in main app loop
+conf.MINUITES_PER_DAY = 1;
 conf.tile_size = 27;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
   'red', 'lime', 'blue', 'yellow', 'cyan', 'purple'];
@@ -1199,12 +1200,11 @@ AI.move = (sm, obj) => {
   const path = d.path;
   const max_move_frames = 30;
   d.move_frame = d.move_frame === undefined ? 0 : d.move_frame;
+  d.pause_frame = d.pause_frame === undefined ? 0 : d.pause_frame;
   const map = sm.map;
   if(!path){
     return;
   }
-  
-    
   //if(obj.active && path.length > 0 && d.move_frame === 0){
   if(obj.active && path.length > 0 && !d.pos_next ){
     d.pos_now = map.px_to_pos( obj.x, obj.y ); 
@@ -1213,10 +1213,8 @@ AI.move = (sm, obj) => {
       d.pos_next = path.pop();
     }
     d.move_frame = max_move_frames;
-    //return;
   }
   if(obj.active && d.move_frame > 0 && d.pos_next ){
-    //d.move_frame -= 1;
     const amt = ( max_move_frames - Math.floor(d.move_frame) ) / max_move_frames; 
     const x = utils.lerp( d.pos_now.x, d.pos_next.x, amt );
     const y = utils.lerp( d.pos_now.y, d.pos_next.y, amt );
@@ -1225,12 +1223,11 @@ AI.move = (sm, obj) => {
     pos.y = Math.round(pos.y);
     Object.assign( obj, pos);
   }
-  
   if( obj.active && d.move_frame === 0 && d.pos_next ){
       Object.assign( obj,  map.pos_to_px( d.pos_next.x, d.pos_next.y ) );
       d.pos_next = null;
+      d.pause_frame = 30;
   }
-  
 };
 
 // set a random target of one of the given types to 
@@ -1765,22 +1762,26 @@ StateMachine.game_update = (sm, t) => {
   sm.spawn('customer');
   sm.spawn('worker');
   
-  const min_per_day = 1 / 60 * 90;
-  sm.time.set_game_speed( min_per_day );
-  sm.move_fps = 1 + 29 * Math.floor( sm.time.game_speed * 0.01  );
-  
-  
+  //const min_per_day = 1 / 60 * 90;
+  //sm.time.set_game_speed( min_per_day );
+  //sm.move_fps = 1 + 29 * Math.floor( sm.time.game_speed * 0.01  );
+
   sm.people.update(ctx, t, function(obj){
     const d = obj.data;
     d.path = d.path || [];
     d.target = d.target || null;
     d.walk_target = d.walk_target || null;
+    d.pause_frame = d.pause_frame || 0; 
     obj.pps = 0;
-    if(obj.active){
+    if(obj.active && !d.pause_frame){
       d.move_frame = d.move_frame === undefined ? 0: d.move_frame;
       d.move_frame -= sm.move_fps * (t / 1000);
       d.move_frame = d.move_frame < 0 ? 0 : d.move_frame;
       AI.main(sm, obj);
+    }
+    if(obj.active && d.pause_frame){
+      d.pause_frame -= sm.move_fps * (t / 1000);
+      d.pause_frame = d.pause_frame < 0 ? 0 : d.pause_frame;
     }
     
   });
@@ -2084,7 +2085,11 @@ StateMachine.states.floor = {
 
     data.tile_sel = null;
     
-    //sm.people.reset();
+    sm.time.set_game_speed( conf.MINUITES_PER_DAY );
+    sm.move_fps = 1 + 29 * Math.floor( sm.time.game_speed * 0.01  );
+
+    console.log('game speed: ' + sm.time.game_speed);
+    console.log('move fps  : ' + sm.move_fps);
 
     data.bg = new UI.ButtonGrid({
       x: sm.map.sx + conf.tile_size * sm.map.width + 5,
