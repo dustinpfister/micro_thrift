@@ -92,6 +92,9 @@ utils.bounding_box = function(a={}, b={}) {
 utils.distance = function (x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 };
+utils.lerp = function(start=0, end=1, amt=0.5) {
+  return start + ( end - start ) * amt;
+};
 /********* **********
   3.0) SImg Class + helper functions
 ********** *********/
@@ -1199,7 +1202,6 @@ AI.move = (sm, obj) => {
   if(!path){
     return;
   }
-  
   if(obj.active && path.length > 0 && d.move_frame === 0){
     d.pos_now = map.px_to_pos( obj.x, obj.y ); 
     d.pos_next = path.pop();
@@ -1211,10 +1213,11 @@ AI.move = (sm, obj) => {
   if(obj.active && d.move_frame > 0){
     d.move_frame -= 1;
     if( d.move_frame > 0 ){
-     // start + (end - start) * amt;
       const amt = ( max_move_frames - d.move_frame ) / max_move_frames; 
-      const x = d.pos_now.x + ( d.pos_next.x - d.pos_now.x  ) * amt;
-      const y = d.pos_now.y + ( d.pos_next.y - d.pos_now.y  ) * amt;
+      //const x = d.pos_now.x + ( d.pos_next.x - d.pos_now.x  ) * amt;
+      //const y = d.pos_now.y + ( d.pos_next.y - d.pos_now.y  ) * amt;
+      const x = utils.lerp( d.pos_now.x, d.pos_next.x, amt );
+      const y = utils.lerp( d.pos_now.y, d.pos_next.y, amt );
       Object.assign( obj,  map.pos_to_px( x, y ) );
     }
     if( d.move_frame === 0 ){

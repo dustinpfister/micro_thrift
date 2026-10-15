@@ -6,9 +6,8 @@
 * create a new instance of GameTime as sm.time when a new game is loaded
 * sm.time will need to be saved as part of a save state
 * display the game time in floor state
-
 * AI.move now moves objects from one pos to the next by a set number of frames
-
+* utils.lerp method
 
 * (pending) - game speed should effect speed of people objects
 * (pending) - pass actual t value when calling people.update
