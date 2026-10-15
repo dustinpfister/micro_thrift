@@ -2053,7 +2053,15 @@ StateMachine.states.floor = {
       data.tile_sel = null;
       tile.data.count = 0;
       tile.data.items = [];
-      sm.map.set_type(ab.gi + 1, tile.x, tile.y);
+      
+      const protected_types = [6];
+      const protected = protected_types.some((i)=>{ return tile.type_index === i; });
+      if( !protected ){
+        sm.map.set_type(ab.gi + 1, tile.x, tile.y);
+      }
+      if( protected ){
+        console.log('can not change type');
+      }
       return;
     }
     

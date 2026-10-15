@@ -10,6 +10,7 @@
 * utils.lerp method
 * game speed should effect speed of people objects
 * AI.move pause frames before getting a new next pos
+* make it so that the player can not clear the spawn location
 
 * (pending) - start a staff state that will be used to manage workers
 * (pending) - can hire a new worker in staff state
@@ -21,7 +22,7 @@
 * (pending) - common tab selection type menu at the top of the screen to switch between floor, staff, and budget states
 * (pending) - money, time, ect part of common display
 * (pending) - make the options state one of the tab menu states
-* (pending) - make it so that the player can not clear the spawn location
+
 * (pending) - make use of object pps again with object pools or remove code
 
 
