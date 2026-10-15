@@ -11,16 +11,23 @@
 * game speed should effect speed of people objects
 * AI.move pause frames before getting a new next pos
 * make it so that the player can not clear the spawn location
+* start a staff state that will be used to manage workers
+* start a Budget state to display what is going on with money
+* money, time, ect part of common display
+* common tab selection menu at the top of the screen to switch between floor, staff, and budget states
 
-* (pending) - start a staff state that will be used to manage workers
+* (pending) - can view current state of workers
 * (pending) - can hire a new worker in staff state
 * (pending) - can fire a worker in staff state
 * (pending) - can set up a schedule for a worker in staff state
-* (pending) - workers will now show up, and leave based on GameTime events
-* (pending) - start a Budget state to display what is going on with money
+* (pending) - workers will show up, and leave based on GameTime events
+* (pending) - schedule will now need to be part of a game save
+
 * (pending) - workers will now cost money over time
-* (pending) - common tab selection type menu at the top of the screen to switch between floor, staff, and budget states
-* (pending) - money, time, ect part of common display
+* (pending) - total worker costs will be shown in budget state
+* (pending) - changes to the map will now cost money and will show in budget
+* (pending) - total sales will show in budget
+
 * (pending) - make the options state one of the tab menu states
 
 * (pending) - make use of object pps again with object pools or remove code

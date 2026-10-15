@@ -3,31 +3,33 @@ Micro thrift
 c 2026 by Dustin Pfister (GPL 3.0) 
 https://github.com/dustinpfister/micro_thrift
 
--1.0 Conf            - a config object containing constants used throughout the codebase
--2.0 Utils           - general utility functions
--3.0 SImg            - Allows for storing image assets in source
-  -3.1 tile_assets   - SImg assets used to tile the WMap instance
-  -3.2 pool_assets   - SImg assets used to skin ObjPool objects
-  -3.3 button_assets - Simg assets used to skin buttons
-  -3.4 main title    - Simg assets for title / main menu
--4.0 ObjPool         - An Object pool class used for sprite objects
--5.0 Pathfinder      - Path finding based on EasyStar
--6.0 GameTime        - Translates real time to game time, handles time triggered events
--7.0 WMap            - A world Map system
--8.0 AI              - Artificial intelligence of sm.people objects
-  -8.1 main          - main AI script that applies to all objects
-  -8.2 worker        - worker AI script 
-  -8.3 customer      - customer AI script
--9.0 UI              - User Interface API
-  -9.1 UI.Button     - A Button class used in menus or as a stand alone object
-  -9.2 UI.ButtonGrid - A Grid of Button Objects
-  -9.3 UI.Menu       - A Menu class that is a collection of UI features such as Buttons
+-1.0 Conf             - a config object containing constants used throughout the codebase
+-2.0 Utils            - general utility functions
+-3.0 SImg             - Allows for storing image assets in source
+  -3.1 tile_assets    - SImg assets used to tile the WMap instance
+  -3.2 pool_assets    - SImg assets used to skin ObjPool objects
+  -3.3 button_assets  - Simg assets used to skin buttons
+  -3.4 main title     - Simg assets for title / main menu
+-4.0 ObjPool          - An Object pool class used for sprite objects
+-5.0 Pathfinder       - Path finding based on EasyStar
+-6.0 GameTime         - Translates real time to game time, handles time triggered events
+-7.0 WMap             - A world Map system
+-8.0 AI               - Artificial intelligence of sm.people objects
+  -8.1 main           - main AI script that applies to all objects
+  -8.2 worker         - worker AI script 
+  -8.3 customer       - customer AI script
+-9.0 UI               - User Interface API
+  -9.1 UI.Button      - A Button class used in menus or as a stand alone object
+  -9.2 UI.ButtonGrid  - A Grid of Button Objects
+  -9.3 UI.Menu        - A Menu class that is a collection of UI features such as Buttons
 -10.0 StateMachine    - The State Machine of the game
- -10.1 boot          - sets up the map, and other aspects of the game state
- -10.2 main_menu     - the main menu / title state
- -10.3 save_manager  - the save manager state
- -10.4 floor         - shows the current state of the 'floor' of the thrift store
- -10.5 options state - options or pause state
+ -10.1 boot           - sets up the map, and other aspects of the game state
+ -10.2 main_menu      - the main menu / title state
+ -10.3 save_manager   - the save manager state
+ -10.4 floor          - shows the current state of the 'floor' of the thrift store
+ -10.5 staff          - options or pause state
+ -10.6 budget         - options or pause state
+ -10.7 options        - options or pause state
 -11.0 App loop        - Main application loop of the game
 
 ********** *********/
@@ -1442,7 +1444,7 @@ const UI = {};
   class ButtonGrid {
     constructor (opt={}) {
       Object.assign(this, {
-         x:0, y:0, bw:3, bh: 3, bsize: 32, 
+         x:0, y:0, bw:3, bh: 3, w: 32, h: 32, 
          on_click: function(){},
          init: function(){},
       }, opt);
@@ -1455,7 +1457,7 @@ const UI = {};
         const x = i % this.bw;
         const y = Math.floor(i / this.bw);
         const button = new UI.Button({
-          x: this.x, y: this.y, w: this.bsize, h: this.bsize, 
+          x: this.x, y: this.y, w: this.w, h: this.h, 
           on_click: function(button, x, y){
             button_grid.button_clicked = true;
             button_grid.set_active(button);
@@ -1493,8 +1495,8 @@ const UI = {};
       let i = 0;
       while(i < len){
         const b = this.buttons[i];
-        b.x = this.x + b.gx * this.bsize;
-        b.y = this.y + b.gy * this.bsize;
+        b.x = this.x + b.gx * this.w;
+        b.y = this.y + b.gy * this.h;
         i += 1;
       }
     }
@@ -1758,6 +1760,31 @@ StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
   }
 };
 
+StateMachine.game_render = function(sm, ctx, canvas) {
+
+  ctx.fillStyle = 'white';
+  ctx.font = '10px monospace';
+  ctx.textBaseline = 'top';
+
+  // display money
+  let sx =  conf.tile_size * 0 + sm.map.sx;
+  ctx.fillText(sm.format_money( sm.money ), sx, 10);
+    
+  // display time
+  sx = conf.tile_size * 4 + sm.map.sx;
+  ctx.fillText(sm.time.get_disp_date(), sx, 10);
+    
+  // display %full
+  sx = conf.tile_size * 11 + sm.map.sx;
+  ctx.fillText('%FULL:', sx, 10);
+  const full = sm.get_percent_full();
+  ctx.fillStyle = '#afafaf';
+  ctx.fillRect(sx + 40, 9, 90, 10);
+  ctx.fillStyle = '#00af00';
+  ctx.fillRect(sx + 40, 9, 90 * full.per, 10);
+
+};
+
 StateMachine.game_update = (sm, t) => {
   sm.spawn('customer');
   sm.spawn('worker');
@@ -1785,10 +1812,55 @@ StateMachine.game_update = (sm, t) => {
     }
     
   });
+  
   // update sm.saves.auto
   sm.saves.auto = sm.create_save();
   const saves_str = JSON.stringify( sm.saves );
   localStorage.setItem('micro_store_saves', saves_str);
+  
+  sm.time.update(t);
+  sm.time.bind_to_hours();
+  
+};
+
+StateMachine.game_state_switcher = {
+
+  state_keys: ['floor', 'staff', 'budget'],
+
+  pointer: function(sm, x, y, e){
+    sm.bg_gs_switch.click_check( x, y );
+  },
+
+  init: function(sm){
+    const sw = this;
+    const index = sw.state_keys.indexOf(sm.current_key);
+    
+    console.log('game state switcher init: ' + sm.current_key);
+  
+    sm.bg_gs_switch = new UI.ButtonGrid({
+      x: sm.map.sx, y: sm.map.sy - 20,
+      bw: 3, bh: 1, w: 27, h: 20,
+      init: function(button){},
+      on_click: function(x, y){
+        const button = this.active_button;
+        if(button){
+          const new_state = sw.state_keys[ button.gi ];
+          if(new_state != sm.current_key){
+            sm.set_state(new_state);
+          }
+        }
+      }
+    });
+    
+    const button = sm.bg_gs_switch.buttons[index];
+    sm.bg_gs_switch.set_active( button );
+    
+  },
+  
+  render: function(sm, ctx, canvas){
+    sm.bg_gs_switch.render(ctx);  
+  }
+
 };
 
 /********* **********
@@ -2081,6 +2153,7 @@ StateMachine.states.floor = {
       data.tile_sel = null;
       console.log('non map area clicked at : ' + x + ',' + y);  
       sm.button_options.click_check( x, y );
+      StateMachine.game_state_switcher.pointer(sm, x, y, e);
       data.bg.click_check(x, y);
       return;
     }
@@ -2102,7 +2175,7 @@ StateMachine.states.floor = {
     data.bg = new UI.ButtonGrid({
       x: sm.map.sx + conf.tile_size * sm.map.width + 5,
       y: sm.map.sy,
-      bw: 3, bh: 1,
+      bw: 3, bh: 1, w: 24, h: 24,
       init: function(button){
         button.simg = simg_tiles_null;
         if(button.gi < 2){
@@ -2131,15 +2204,14 @@ StateMachine.states.floor = {
       }
     });
   
+    StateMachine.game_state_switcher.init(sm);
+  
   },
 
   update: function(sm, t) {
     
     StateMachine.game_update(sm, t);
-    
-    sm.time.update(t);
-    sm.time.bind_to_hours();
-    
+
   },
 
   render: function(sm, ctx, canvas) {
@@ -2151,27 +2223,11 @@ StateMachine.states.floor = {
     // render tile mutation button grid
     data.bg.render(ctx)
     
+    StateMachine.game_render(sm, ctx, canvas);
     
     ctx.fillStyle = 'white';
     ctx.font = '10px monospace';
     ctx.textBaseline = 'top';
-    
-    // display money
-    let sx =  conf.tile_size * 0 + sm.map.sx;
-    ctx.fillText(sm.format_money( sm.money ), sx, 10);
-    
-    // display time
-    sx = conf.tile_size * 4 + sm.map.sx;
-    ctx.fillText(sm.time.get_disp_date(), sx, 10);
-    
-    // display %full
-    sx = conf.tile_size * 11 + sm.map.sx;
-    ctx.fillText('%FULL:', sx, 10);
-    const full = sm.get_percent_full();
-    ctx.fillStyle = '#afafaf';
-    ctx.fillRect(sx + 40, 9, 90, 10);
-    ctx.fillStyle = '#00af00';
-    ctx.fillRect(sx + 40, 9, 90 * full.per, 10);
     
     // tile_sel?
     if(data.tile_sel){
@@ -2193,23 +2249,57 @@ StateMachine.states.floor = {
     // options button
     sm.button_options.render(ctx);
     
+    StateMachine.game_state_switcher.render(sm, ctx, canvas);
+    
   }
 
 };
 /********* **********
-  10.5) options State
+  10.5) staff State
+********** *********/
+StateMachine.states.staff = {
+  pointer : function(sm, x, y, e) {
+    StateMachine.game_state_switcher.pointer(sm, x, y, e);
+  },
+  init: function(sm) {
+    StateMachine.game_state_switcher.init(sm);
+  },
+  update: function(sm, t) {
+    StateMachine.game_update(sm, t);
+  },
+  render: function(sm, ctx, canvas) {
+    StateMachine.game_render(sm, ctx, canvas);
+    StateMachine.game_state_switcher.render(sm, ctx, canvas);
+  }
+};
+/********* **********
+  10.6) budget State
+********** *********/
+StateMachine.states.budget = {
+  pointer : function(sm, x, y, e) {
+    StateMachine.game_state_switcher.pointer(sm, x, y, e);
+  },
+  init: function(sm) {
+    StateMachine.game_state_switcher.init(sm);
+  },
+  update: function(sm, t) {
+    StateMachine.game_update(sm, t);
+  },
+  render: function(sm, ctx, canvas) {
+    StateMachine.game_render(sm, ctx, canvas);
+    StateMachine.game_state_switcher.render(sm, ctx, canvas);
+  }
+};
+/********* **********
+  10.7) options State
 ********** *********/
 StateMachine.states.options = {
   pointer : function(sm, x, y, e) {
-  
     sm.button_continue.click_check( x, y );
     sm.button_main_menu.click_check( x, y );
-  
   },
   init: function(sm) {
-  
     const canvas = sm.canvas;
-
     sm.button_continue = sm.button_continue || new UI.Button({
       x: canvas.width / 2 - 128 * 1.10, y: canvas.height / 2, w: 128,  h:64,
       simg: simg_buttons_options, frame_index: 0,
@@ -2217,7 +2307,6 @@ StateMachine.states.options = {
         sm.set_state('floor');
       }
     });
-    
     sm.button_main_menu = sm.button_main_menu || new UI.Button({
       x: canvas.width / 2 + 128 * 0.10, y: canvas.height / 2, w: 128,  h:64,
       simg: simg_buttons_options, frame_index: 1,
@@ -2225,15 +2314,11 @@ StateMachine.states.options = {
         sm.set_state('main_menu');
       }
     });
-  
   },
   update: function(sm, t) {},
   render: function(sm, ctx, canvas) {
-  
     sm.button_continue.render(ctx);
-    sm.button_main_menu.render(ctx);
-    
-    
+    sm.button_main_menu.render(ctx);  
   }
 };
 
