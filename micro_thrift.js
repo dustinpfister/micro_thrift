@@ -1580,6 +1580,7 @@ StateMachine.create_save = function(){
   }
   return {
     lu: new Date(),
+    date_str: sm.time.date_str,
     money: sm.money,
     map_data: map_data
   };
@@ -2085,6 +2086,9 @@ StateMachine.states.floor = {
     
     StateMachine.game_update(sm, t);
     
+    sm.time.update(t);
+    sm.time.bind_to_hours();
+    
   },
 
   render: function(sm, ctx, canvas) {
@@ -2096,22 +2100,27 @@ StateMachine.states.floor = {
     // render tile mutation button grid
     data.bg.render(ctx)
     
-    // display money
+    
     ctx.fillStyle = 'white';
-    ctx.textBaseline = 'top';
-    let sx =  conf.tile_size * 0 + sm.map.sx;
     ctx.font = '10px monospace';
+    ctx.textBaseline = 'top';
+    
+    // display money
+    let sx =  conf.tile_size * 0 + sm.map.sx;
     ctx.fillText(sm.format_money( sm.money ), sx, 10);
     
-    // display %full
+    // display time
     sx = conf.tile_size * 4 + sm.map.sx;
-    ctx.font = '10px monospace';
+    ctx.fillText(sm.time.get_disp_date(), sx, 10);
+    
+    // display %full
+    sx = conf.tile_size * 11 + sm.map.sx;
     ctx.fillText('%FULL:', sx, 10);
     const full = sm.get_percent_full();
     ctx.fillStyle = '#afafaf';
-    ctx.fillRect(sx + 45, 9, 120, 10);
+    ctx.fillRect(sx + 40, 9, 90, 10);
     ctx.fillStyle = '#00af00';
-    ctx.fillRect(sx + 45, 9, 120 * full.per, 10);
+    ctx.fillRect(sx + 40, 9, 90 * full.per, 10);
     
     // tile_sel?
     if(data.tile_sel){
