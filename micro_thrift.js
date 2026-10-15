@@ -12,22 +12,23 @@ https://github.com/dustinpfister/micro_thrift
   -3.4 main title    - Simg assets for title / main menu
 -4.0 ObjPool         - An Object pool class used for sprite objects
 -5.0 Pathfinder      - Path finding based on EasyStar
--6.0 WMap            - A world Map system
--7.0 AI              - Artificial intelligence of sm.people objects
-  -7.1 main          - main AI script that applies to all objects
-  -7.2 worker        - worker AI script 
-  -7.3 customer      - customer AI script
--8.0 UI              - User Interface API
-  -8.1 UI.Button     - A Button class used in menus or as a stand alone object
-  -8.2 UI.ButtonGrid - A Grid of Button Objects
-  -8.3 UI.Menu       - A Menu class that is a collection of UI features such as Buttons
--9.0 StateMachine    - The State Machine of the game
-  -9.1 boot          - sets up the map, and other aspects of the game state
-  -9.2 main_menu     - the main menu / title state
-  -9.3 save_manager  - the save manager state
-  -9.4 floor         - shows the current state of the 'floor' of the thrift store
-  -9.5 options state - options or pause state
--10.0 App loop        - Main application loop of the game
+-6.0 GameTime        - Translates real time to game time, handles time triggered events
+-7.0 WMap            - A world Map system
+-8.0 AI              - Artificial intelligence of sm.people objects
+  -8.1 main          - main AI script that applies to all objects
+  -8.2 worker        - worker AI script 
+  -8.3 customer      - customer AI script
+-9.0 UI              - User Interface API
+  -9.1 UI.Button     - A Button class used in menus or as a stand alone object
+  -9.2 UI.ButtonGrid - A Grid of Button Objects
+  -9.3 UI.Menu       - A Menu class that is a collection of UI features such as Buttons
+-10.0 StateMachine    - The State Machine of the game
+ -10.1 boot          - sets up the map, and other aspects of the game state
+ -10.2 main_menu     - the main menu / title state
+ -10.3 save_manager  - the save manager state
+ -10.4 floor         - shows the current state of the 'floor' of the thrift store
+ -10.5 options state - options or pause state
+-11.0 App loop        - Main application loop of the game
 
 ********** *********/
 /********* **********
@@ -53,8 +54,7 @@ conf.SAVE_DEFAULT = {
     185: 'b02',186: 'b02',187: 'b02',188: 'b02',189: 'b02',190: 'b02',191: 'b02'
   }
 };
-// max number of display objects used for sm.people
-conf.MAX_OBJECTS = {
+conf.MAX_OBJECTS = {  // max number of display objects used for sm.people
   worker: 1,
   customer: 3
 };
@@ -71,6 +71,12 @@ conf.items = [
   { desc: 'plain white mug', value_index: 3 },
   { desc: 'mid century pyrex bowl', value_index: 18 }
 ];
+conf.GT_DEFAULTS = { // defaults for an instance of the GameTime class
+  date: null,
+  date_str: "2000-01-01T00:00:00",
+  start_hour: 9, end_hour:20,
+  game_speed: 600
+};
 /********* **********
   2.0) Utils
 ********** *********/
@@ -865,7 +871,101 @@ class PathFinder {
 }
 
 /********* **********
-  6.0) WMap world map system
+  6.0) GameTime
+********** *********/
+class GameTime {
+
+    constructor ( opt = {} ) {
+      Object.assign(this, conf.GT_DEFAULTS, opt);
+      this.events = [];
+      this.update(0);
+    }
+
+    get_disp_date () {
+      const d = this.date;
+      return d.toLocaleString('en-US', { 
+        timeZone: 'UTC', weekday: 'short',
+        month: 'short', day: '2-digit', year: "numeric",
+        hour: '2-digit', minute: '2-digit', hour12: true
+      });
+    }
+
+    get_per_from_hours ( h=0, min=0, sec=0) {
+      const day_secs = h * 3600 + min * 60 + sec;
+      const total_secs = (this.end_hour - this.start_hour) * 3600;
+      let per = day_secs / total_secs;
+      per = per < 0 ? 0 : per;
+      per = per > 1 ? 1 : per;
+      return per; 
+    }
+
+    get_day_percent(  ) {
+      const date = this.date;
+      const h = date.getUTCHours() - this.start_hour;
+      const min = date.getUTCMinutes();
+      const sec = date.getUTCSeconds();
+      const per = this.get_per_from_hours(h, min, sec);
+      return parseFloat( per.toFixed(4) ); 
+    }
+
+    push_event( opt={} ) {
+      opt = Object.assign({
+        start_hours: [0,0,0], end_hours:[24,0,0],
+        idle: function(){}, update: function(){}
+      }, opt);
+      const gt = this;
+      gt.events.push({
+        per: [
+          gt.get_per_from_hours.apply(gt, opt.start_hours),
+          gt.get_per_from_hours.apply(gt, opt.end_hours)
+        ],
+        idle: opt.idle,
+        update: opt.update
+      });
+    }
+
+    // set game speed based on minutes per game day
+    set_game_speed (min_per_day=1) {
+      const hours = this.end_hour - this.start_hour;
+      this.game_speed = hours * 60 / min_per_day;
+    }
+
+    // set date to the given js date
+    set_to_js_date (js_date) {
+      this.date = js_date;
+      this.date_str = this.date.toISOString();
+    }
+
+    bind_to_hours () {
+       const now = this.date;
+       if(now.getUTCHours() < this.start_hour){
+          this.date.setUTCHours(this.start_hour)
+       }
+       if(now.getUTCHours() >= this.end_hour){
+          this.date.setUTCHours(this.start_hour)
+       }
+       this.set_to_js_date( this.date );
+    }
+  
+    // update state with the given real time ms value
+    update (t=0) {
+      const lt = new Date( this.date_str );
+      const ms_then = lt.getTime();
+      const ms_now = ms_then + t * this.game_speed;
+      this.set_to_js_date( new Date( ms_now ) );      
+      const per = this.get_day_percent();
+      this.events.forEach( (evnt) => {
+         const active = per >= evnt.per[0] && per <= evnt.per[1];
+         if(!active){ evnt.idle(); }
+         if(active){ evnt.update(); }
+      });
+
+    }
+
+};
+
+/********* **********
+  7.0) WMap world map system
 ********** *********/
 
 class WMap {
@@ -1086,7 +1186,7 @@ class WMap {
 }
 
 /********* **********
-  7.0) AI
+  8.0) AI
 ********** *********/
 const AI = {}
 // move if there is path data
@@ -1150,7 +1250,7 @@ AI.set_path_to_target = (sm, obj) => {
 };
 
 /********* **********
-  7.1) Main AI
+  8.1) Main AI
 ********** *********/
 AI.main = function( sm, obj ){
   // always move if there is path data
@@ -1159,7 +1259,7 @@ AI.main = function( sm, obj ){
   AI[obj.data.type](sm, obj);
 };
 /********* **********
-  7.2) Worker AI
+  8.2) Worker AI
 ********** *********/
 AI.worker = function(sm, obj){
   const map = sm.map;
@@ -1216,7 +1316,7 @@ AI.worker = function(sm, obj){
   
 };
 /********* **********
-  7.3) customer AI
+  8.3) customer AI
 ********** *********/
 AI.customer = function(sm, obj){
   const map = sm.map;
@@ -1276,11 +1376,11 @@ AI.customer = function(sm, obj){
   }
 };
 /********* **********
-  8.0) UI - User Interface API
+  9.0) UI - User Interface API
 ********** *********/
 const UI = {};
 /********* **********
-  8.1) UI.Button
+  9.1) UI.Button
 ********** *********/
 {
   class Button {
@@ -1312,7 +1412,7 @@ const UI = {};
   UI.Button = Button;
 };
 /********* **********
-  8.2) UI.ButtonGrid
+  9.2) UI.ButtonGrid
 ********** *********/
 {
   class ButtonGrid {
@@ -1415,7 +1515,7 @@ const UI = {};
   UI.ButtonGrid = ButtonGrid;
 }
 /********* **********
-  8.3) UI.Menu
+  9.3) UI.Menu
 ********** *********/
 {
   class Menu {
@@ -1426,10 +1526,11 @@ const UI = {};
   UI.Menu = Menu;
 }
 /********* **********
-  9.0) StateMachine
+  10.0) StateMachine
 ********** *********/
 const StateMachine = {
-    map:null, money:null, lu:null,
+    map:null, money:null, time: null,
+    lu:null,
     current_key: 'boot',
     current: null,
     canvas: null,
@@ -1487,6 +1588,9 @@ StateMachine.create_save = function(){
 StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
   const sm = this;
   sm.lu = new Date(save_obj.lu);
+  sm.time = new GameTime(Object.assign({}, conf.GT_DEFAULTS, {
+     date_str: save_obj.date_str || conf.GT_DEFAULTS.date_str
+  }));
   sm.money = save_obj.money;
   sm.map = new WMap({
       width: 16, height: 16,
@@ -1648,7 +1752,7 @@ StateMachine.game_update = (sm, t) => {
 };
 
 /********* **********
-  9.1) boot state
+  10.1) boot state
 ********** *********/
 StateMachine.states.boot = {
 
@@ -1696,7 +1800,7 @@ StateMachine.states.boot = {
 };
 
 /********* **********
-  9.2) main_menu State
+  10.2) main_menu State
 ********** *********/
 StateMachine.states.main_menu = {
   pointer : function(sm, x, y, e) {
@@ -1716,6 +1820,8 @@ StateMachine.states.main_menu = {
         if(!sm.saves.auto){
           sm.load_save();
         }
+        console.log('playing current auto save: ');
+        console.log('game time: ' + sm.time.get_disp_date() );
         sm.set_state('floor');
       }
     });
@@ -1755,7 +1861,7 @@ StateMachine.states.main_menu = {
   }
 };
 /********* **********
-  9.3) save_manager State
+  10.3) save_manager State
 ********** *********/
 StateMachine.states.save_manager = {
   pointer : function(sm, x, y, e) {
@@ -1890,7 +1996,7 @@ StateMachine.states.save_manager = {
   }
 };
 /********* **********
-  9.4) floor State
+  10.4) floor State
 ********** *********/
 StateMachine.states.floor = {
 
@@ -2031,7 +2137,7 @@ StateMachine.states.floor = {
 
 };
 /********* **********
-  9.5) options State
+  10.5) options State
 ********** *********/
 StateMachine.states.options = {
   pointer : function(sm, x, y, e) {
@@ -2072,7 +2178,7 @@ StateMachine.states.options = {
 };
 
 /********* **********
-  10.0) APP LOOP
+  11.0) APP LOOP
 ********** *********/
 const canvas = StateMachine.canvas = document.getElementById('the_canvas');
 const ctx = StateMachine.ctx = canvas.getContext('2d');

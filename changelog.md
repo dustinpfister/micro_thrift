@@ -2,12 +2,22 @@
 
 ## R3 () - GameTime, Staff state, Budget state
 * added a game update method that can be called in any state beyond just floor state.
+* start a GameTime system that will translate real time to game time
+* create a new instance of GameTime as sm.time when a new game is loaded
+* (pending) - sm.time will need to be saved as part of a save state
+* (pending) - display the game time in floor state
 
-* (pending) - start a GameTime system that will translate real time to game time
-* (pending) - start a staff state that will be used to higher, fire, ect
+* (pending) - start a staff state that will be used to manage workers
+* (pending) - can hire a new worker in staff state
+* (pending) - can fire a worker in staff state
+* (pending) - can set up a schedule for a worker in staff state
+* (pending) - workers will now show up, and leave based on GameTime events
+
 * (pending) - start a Budget state to display what is going on with money
 * (pending) - workers will now cost money over time
-* (pending) - have a tab selection type menu at the top of the screen to switch between floor, staff, and budget states
+
+* (pending) - common tab selection type menu at the top of the screen to switch between floor, staff, and budget states
+* (pending) - money, time, ect part of common display
 * (pending) - make the options state one of the tab menu states
 
 ## R2 ( done 09/14/2026 ) - Utils methods, UI api, map mutation
