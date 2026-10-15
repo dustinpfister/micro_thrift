@@ -37,6 +37,7 @@ https://github.com/dustinpfister/micro_thrift
 const conf = {
   R: '3A'
 };
+conf.LOOP_MS_DELAY = 33; // number of ms to delay each frame in main app loop
 conf.tile_size = 27;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
   'red', 'lime', 'blue', 'yellow', 'cyan', 'purple'];
@@ -1196,34 +1197,40 @@ const AI = {}
 AI.move = (sm, obj) => {
   const d = obj.data;
   const path = d.path;
-  const max_move_frames = sm.max_move_frames || 10;
+  const max_move_frames = 30;
   d.move_frame = d.move_frame === undefined ? 0 : d.move_frame;
   const map = sm.map;
   if(!path){
     return;
   }
-  if(obj.active && path.length > 0 && d.move_frame === 0){
+  
+    
+  //if(obj.active && path.length > 0 && d.move_frame === 0){
+  if(obj.active && path.length > 0 && !d.pos_next ){
     d.pos_now = map.px_to_pos( obj.x, obj.y ); 
     d.pos_next = path.pop();
     if(d.pos_now.x === d.pos_next.x && d.pos_now.y === d.pos_next.y){
       d.pos_next = path.pop();
     }
     d.move_frame = max_move_frames;
+    //return;
   }
-  if(obj.active && d.move_frame > 0){
-    d.move_frame -= 1;
-    if( d.move_frame > 0 ){
-      const amt = ( max_move_frames - d.move_frame ) / max_move_frames; 
-      //const x = d.pos_now.x + ( d.pos_next.x - d.pos_now.x  ) * amt;
-      //const y = d.pos_now.y + ( d.pos_next.y - d.pos_now.y  ) * amt;
-      const x = utils.lerp( d.pos_now.x, d.pos_next.x, amt );
-      const y = utils.lerp( d.pos_now.y, d.pos_next.y, amt );
-      Object.assign( obj,  map.pos_to_px( x, y ) );
-    }
-    if( d.move_frame === 0 ){
+  if(obj.active && d.move_frame > 0 && d.pos_next ){
+    //d.move_frame -= 1;
+    const amt = ( max_move_frames - Math.floor(d.move_frame) ) / max_move_frames; 
+    const x = utils.lerp( d.pos_now.x, d.pos_next.x, amt );
+    const y = utils.lerp( d.pos_now.y, d.pos_next.y, amt );
+    const pos = map.pos_to_px( x, y );
+    pos.x = Math.round(pos.x);
+    pos.y = Math.round(pos.y);
+    Object.assign( obj, pos);
+  }
+  
+  if( obj.active && d.move_frame === 0 && d.pos_next ){
       Object.assign( obj,  map.pos_to_px( d.pos_next.x, d.pos_next.y ) );
-    }
+      d.pos_next = null;
   }
+  
 };
 
 // set a random target of one of the given types to 
@@ -1757,6 +1764,12 @@ StateMachine.stock_item = function(tile, item_index=0, price_index=0) {
 StateMachine.game_update = (sm, t) => {
   sm.spawn('customer');
   sm.spawn('worker');
+  
+  const min_per_day = 1 / 60 * 90;
+  sm.time.set_game_speed( min_per_day );
+  sm.move_fps = 1 + 29 * Math.floor( sm.time.game_speed * 0.01  );
+  
+  
   sm.people.update(ctx, t, function(obj){
     const d = obj.data;
     d.path = d.path || [];
@@ -1764,6 +1777,9 @@ StateMachine.game_update = (sm, t) => {
     d.walk_target = d.walk_target || null;
     obj.pps = 0;
     if(obj.active){
+      d.move_frame = d.move_frame === undefined ? 0: d.move_frame;
+      d.move_frame -= sm.move_fps * (t / 1000);
+      d.move_frame = d.move_frame < 0 ? 0 : d.move_frame;
       AI.main(sm, obj);
     }
     
@@ -2227,7 +2243,7 @@ const loop = () => {
   const now = new Date();
   const t = now - lt;
   requestAnimationFrame(loop);
-  if(t >= 250){
+  if(t >= conf.LOOP_MS_DELAY){
     lt = now;
     StateMachine.update(t);
     StateMachine.render(ctx, canvas);

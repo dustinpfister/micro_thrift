@@ -8,10 +8,7 @@
 * display the game time in floor state
 * AI.move now moves objects from one pos to the next by a set number of frames
 * utils.lerp method
-
-* (pending) - game speed should effect speed of people objects
-* (pending) - pass actual t value when calling people.update
-* (pending) - make use of object pps again with object pools
+* game speed should effect speed of people objects
 
 * (pending) - AI.move pause frames before getting a new next pos
 
@@ -31,6 +28,7 @@
 
 * (pending) - make it so that the player can not clear the spawn location
 
+* (pending) - make use of object pps again with object pools or remove code
 
 
 ## R2 ( done 09/14/2026 ) - Utils methods, UI api, map mutation
