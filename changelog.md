@@ -16,8 +16,7 @@
 * money, time, ect part of common display
 * common tab selection menu at the top of the screen to switch between floor, staff, and budget states
 * can add an render_over option for Button class instances
-
-* (pending) have an attach labels method for ButtonGrid class
+* have an attach labels method for ButtonGrid class
 
 * (pending) - can view current state of workers
 * (pending) - can hire a new worker in staff state

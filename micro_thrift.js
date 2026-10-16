@@ -1449,6 +1449,7 @@ const UI = {};
          x:0, y:0, bw:3, bh: 3, w: 32, h: 32, 
          on_click: function(){},
          init: function(){},
+         names: null,
       }, opt);
       this.buttons = [];
       this.active_button = null;
@@ -1475,7 +1476,29 @@ const UI = {};
       }
       this.set_active(null);
       this.pos_buttons();
+      if(this.names){
+        this.attach_labels(this.names);
+      }
     }
+    
+    attach_labels(names=[]){
+      let i = 0;
+      const len = names.length;
+      const bg = this;
+      while(i < len){
+        bg.buttons[i].text = bg.names[i];
+        bg.buttons[i].render_over = function(ctx) {
+          ctx.fillStyle = 'black';
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'center';
+          ctx.font = '10px monospace';      
+          ctx.fillText(this.text, this.x + bg.w / 2, this.y + bg.h / 2);
+          ctx.strokeRect(this.x, this.y, bg.w, bg.h);
+        };
+        i += 1;
+      }
+    }
+    
     click_check (x=-1, y=-1) {
      const len = this.bw * this.bh;
       let i = 0;
@@ -1492,6 +1515,7 @@ const UI = {};
         this.set_active(null);
       }
     } 
+    
     pos_buttons () {
       const len = this.bw * this.bh;
       let i = 0;
@@ -1767,6 +1791,7 @@ StateMachine.game_render = function(sm, ctx, canvas) {
   ctx.fillStyle = 'white';
   ctx.font = '10px monospace';
   ctx.textBaseline = 'top';
+  ctx.textAlign = 'left';
 
   // display money
   let sx =  conf.tile_size * 0 + sm.map.sx;
@@ -1842,6 +1867,7 @@ StateMachine.game_state_switcher = {
     const bg = sm.bg_gs_switch = new UI.ButtonGrid({
       x: sm.map.sx, y: sm.map.sy - 20,
       bw: 3, bh: 1, w: 27 * 2, h: 20,
+      names: sw.state_keys,
       init: function(button){},
       on_click: function(x, y){
         const button = this.active_button;
@@ -1855,11 +1881,11 @@ StateMachine.game_state_switcher = {
     });
     
     // render over test
-    bg.buttons[0].render_over = function(ctx) {
-      ctx.fillStyle = 'red';
-      ctx.textBaseline = 'top';
-      ctx.fillText('floor', this.x, this.y);
-    };
+    //bg.buttons[0].render_over = function(ctx) {
+    //  ctx.fillStyle = 'red';
+    //  ctx.textBaseline = 'top';
+    //  ctx.fillText('floor', this.x, this.y);
+    //};
     
     const button = sm.bg_gs_switch.buttons[index];
     sm.bg_gs_switch.set_active( button );
@@ -1969,6 +1995,7 @@ StateMachine.states.main_menu = {
     ctx.fillStyle = 'black';
     ctx.font = '25px monospace';
     ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
     const play_text = sm.saves.auto ? 'continue' : 'start_new';
     ctx.fillText(play_text, sm.button_play.x + 10, sm.button_play.y + 10);
 
