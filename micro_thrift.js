@@ -1414,6 +1414,7 @@ const UI = {};
        Object.assign(this, {
          x:0, y:0, w: 128, h: 32, 
          simg: null, frame_index: 0,
+         render_over: function(){},
          on_click: function(){}
        }, opt);
     }
@@ -1433,6 +1434,7 @@ const UI = {};
           this.x, this.y, this.w, this.h
         );
       }
+      this.render_over.call(this, ctx);
     }
   };
   UI.Button = Button;
@@ -1837,9 +1839,9 @@ StateMachine.game_state_switcher = {
     
     console.log('game state switcher init: ' + sm.current_key);
   
-    sm.bg_gs_switch = new UI.ButtonGrid({
+    const bg = sm.bg_gs_switch = new UI.ButtonGrid({
       x: sm.map.sx, y: sm.map.sy - 20,
-      bw: 3, bh: 1, w: 27, h: 20,
+      bw: 3, bh: 1, w: 27 * 2, h: 20,
       init: function(button){},
       on_click: function(x, y){
         const button = this.active_button;
@@ -1851,6 +1853,13 @@ StateMachine.game_state_switcher = {
         }
       }
     });
+    
+    // render over test
+    bg.buttons[0].render_over = function(ctx) {
+      ctx.fillStyle = 'red';
+      ctx.textBaseline = 'top';
+      ctx.fillText('floor', this.x, this.y);
+    };
     
     const button = sm.bg_gs_switch.buttons[index];
     sm.bg_gs_switch.set_active( button );
