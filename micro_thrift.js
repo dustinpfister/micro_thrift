@@ -1442,6 +1442,7 @@ const UI = {};
 /********* **********
   9.2) UI.ButtonGrid
 ********** *********/
+/*
 {
   class ButtonGrid {
     constructor (opt={}) {
@@ -1499,6 +1500,117 @@ const UI = {};
       }
     }
     
+    click_check (x=-1, y=-1) {
+     const len = this.bw * this.bh;
+      let i = 0;
+      this.button_clicked = false;
+      while(i < len){
+        const b = this.buttons[i];
+        b.click_check(x, y);
+        i += 1;
+      }
+      if(this.button_clicked){
+        this.on_click(x, y);
+      }
+      if(!this.button_clicked){
+        this.set_active(null);
+      }
+    } 
+    
+    pos_buttons () {
+      const len = this.bw * this.bh;
+      let i = 0;
+      while(i < len){
+        const b = this.buttons[i];
+        b.x = this.x + b.gx * this.w;
+        b.y = this.y + b.gy * this.h;
+        i += 1;
+      }
+    }
+    set_active  ( button=null ) {
+      const len = this.bw * this.bh;
+      let i = 0;
+      while(i < len){
+        this.buttons[i].active = false;
+        i += 1;
+      }
+      if(this.active_button === button){
+        this.active_button = null;
+        return;
+      }
+      this.active_button = null;
+      if(typeof button === 'object' && button != null){
+        button.active = true;
+        this.active_button = button;
+      }
+      if(typeof button === 'number' && !isNaN(button) ){
+        const button = this.buttons[button];
+        button.active = true;
+        this.active_button = button;
+      }
+    }
+    render(ctx){
+      const len = this.bw * this.bh;
+      let i = 0;
+      while(i < len){
+        const b = this.buttons[i];
+        b.render(ctx);  
+        if(this.active_button){
+          if(this.active_button === b ){
+            ctx.fillStyle = 'rgba(255,0,0,0.25)';
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+          }
+        }
+        i += 1;
+      }    
+    }
+  }
+  UI.ButtonGrid = ButtonGrid;
+}
+*/
+{
+  class ButtonGrid {
+    constructor (opt={}) {
+      Object.assign(this, {
+         x:0, y:0, bw:3, bh: 3, w: 32, h: 32,
+         render_over: null,
+         on_click: function(){},
+         init: function(){}
+         //names: null,
+      }, opt);
+      this.buttons = [];
+      this.active_button = null;
+      let i = 0;
+      const len = this.bw * this.bh;
+      const bg = this;
+      while(i < len){
+        const x = i % this.bw;
+        const y = Math.floor(i / this.bw);
+        const button = new UI.Button({
+          x: this.x, y: this.y, w: this.w, h: this.h,
+          render_over: function(ctx){
+            const b = this;
+            if(bg.render_over){
+              bg.render_over.call(bg, ctx, bg, b);
+            }
+          },
+          on_click: function(button, x, y){
+            bg.button_clicked = true;
+            bg.set_active(button);
+          }
+        });
+        button.active = false;
+        button.gi = i;
+        button.gx = x;
+        button.gy = y;
+        this.buttons[i] = button;
+        this.init(button);
+        i += 1;
+      }
+      this.set_active(null);
+      this.pos_buttons();
+    }
+      
     click_check (x=-1, y=-1) {
      const len = this.bw * this.bh;
       let i = 0;
@@ -1867,7 +1979,16 @@ StateMachine.game_state_switcher = {
     const bg = sm.bg_gs_switch = new UI.ButtonGrid({
       x: sm.map.sx, y: sm.map.sy - 20,
       bw: 3, bh: 1, w: 27 * 2, h: 20,
-      names: sw.state_keys,
+      //names: sw.state_keys,
+      render_over: function(ctx, bg, b) {
+        ctx.fillStyle = 'black';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        ctx.font = '10px monospace';
+        
+        ctx.fillText(sw.state_keys[b.gi], b.x + b.w / 2, b.y + bg.h / 2);
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
+      },
       init: function(button){},
       on_click: function(x, y){
         const button = this.active_button;
