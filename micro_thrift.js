@@ -1504,7 +1504,7 @@ const UI = {};
       if(this.button_clicked){
         this.on_click(x, y);
       }
-      if(!this.button_clicked){
+      if(!this.button_clicked && !this.always_active){
         this.set_active(null);
       }
     } 
