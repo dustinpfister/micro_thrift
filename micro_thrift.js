@@ -59,7 +59,7 @@ conf.SAVE_DEFAULT = {
   }
 };
 conf.MAX_OBJECTS = {  // max number of display objects used for sm.people
-  worker: 1,
+  worker: 3,
   customer: 3
 };
 conf.MAX_SHELF_ITEMS = 10;
@@ -1719,7 +1719,6 @@ StateMachine.spawn = function ( object_type='customer', spawn_index=0 ) {
     if(obj){
       obj.active = true;
       obj.data.type = object_type;
-  
       const pos = map.pos_to_px(spawn_pos.x, spawn_pos.y);
       obj.x = pos.x;
       obj.y = pos.y;
@@ -2297,10 +2296,17 @@ StateMachine.states.floor = {
   10.5) staff State
 ********** *********/
 StateMachine.states.staff = {
+
+  data: {
+    
+  },
+
   pointer : function(sm, x, y, e) {
     StateMachine.game_state_switcher.pointer(sm, x, y, e);
   },
   init: function(sm) {
+    const data = sm.states.staff.data;
+    
     StateMachine.game_state_switcher.init(sm);
   },
   update: function(sm, t) {
@@ -2309,6 +2315,27 @@ StateMachine.states.staff = {
   render: function(sm, ctx, canvas) {
     StateMachine.game_render(sm, ctx, canvas);
     StateMachine.game_state_switcher.render(sm, ctx, canvas);
+    
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.font = '10px monospace';
+    
+    const workers = sm.people.objects.filter((obj)=>{
+       return obj.data.type === 'worker';
+    });
+    
+    let iw = 0;
+    const len = workers.length;
+    while(iw < len){
+       const obj = workers[ iw ];
+       const pos = sm.map.px_to_pos(obj.x, obj.y);
+       const worker_status = iw + ' ' +
+         pos.x + ',' + pos.y;
+       ctx.fillText(worker_status, 20, 50 + 15 * iw);
+       iw += 1;
+    }
+    
   }
 };
 /********* **********

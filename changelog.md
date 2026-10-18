@@ -17,22 +17,36 @@
 * common tab selection menu at the top of the screen to switch between floor, staff, and budget states
 * can add an render_over option for Button class instances
 * general render over method for Button Grid class
+* can view current state of sm.people type workers
 
+<!-- new fixed population for people objects -->
+* (pending) - new fixed population database for workers and customers 
+* (pending) - when a person object spawns in that person object must have an id in the pop database
+* (pending) - a max person type can be higher than the population, but still be the max in the store.
 
-* (pending) - can view current state of workers
-* (pending) - can hire a new worker in staff state
-* (pending) - can fire a worker in staff state
+<!-- workers spawn in by schedule -->
 * (pending) - can set up a schedule for a worker in staff state
 * (pending) - workers will show up, and leave based on GameTime events
 * (pending) - schedule will now need to be part of a game save
 
+<!-- customers spawn in by way of GameTime state -->
+* (pending) - start a new system for spawning of customers based on gameTime
+
+<!-- hire and fire in staff state -->
+* (pending) - can hire a worker in staff state
+* (pending) - can fire a worker in staff state
+
+<!-- edit schedule -->
+
+<!-- workers cost money -->
 * (pending) - workers will now cost money over time
 * (pending) - total worker costs will be shown in budget state
 * (pending) - changes to the map will now cost money and will show in budget
 * (pending) - total sales will show in budget
 
+<!-- misc -->
+* (pending) - state of worker population must be part of the save state
 * (pending) - make the options state one of the tab menu states
-
 * (pending) - make use of object pps again with object pools or remove code
 
 
