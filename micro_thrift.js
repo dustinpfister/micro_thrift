@@ -11,6 +11,7 @@ https://github.com/dustinpfister/micro_thrift
   -3.3 button_assets  - Simg assets used to skin buttons
   -3.4 main title     - Simg assets for title / main menu
 -4.0 ObjPool          - An Object pool class used for sprite objects
+  -4.1 Population     - A super class of ObjPool that is used for sm.people
 -5.0 Pathfinder       - Path finding based on EasyStar
 -6.0 GameTime         - Translates real time to game time, handles time triggered events
 -7.0 WMap             - A world Map system
@@ -39,6 +40,15 @@ https://github.com/dustinpfister/micro_thrift
 const conf = {
   R: '3A'
 };
+conf.POPULATION = [
+  { id:0, name: 'cady',   type: 'worker' },
+  { id:1, name: 'dustin', type: 'worker' },
+  { id:2, name: 'emme',   type: 'customer' },
+  { id:3, name: 'jean',   type: 'worker' },
+  { id:4, name: 'jessy',  type: 'worker' },
+  { id:5, name: 'rose',   type: 'customer' },
+  { id:6, name: 'siera',  type: 'customer' }
+];
 conf.LOOP_MS_DELAY = 33; // number of ms to delay each frame in main app loop
 conf.MINUITES_PER_DAY = 1;
 conf.tile_size = 27;
@@ -389,7 +399,35 @@ class ObjPool {
   }
 
 }
+/********* **********
+  4.1) Population
+********** *********/
+class Population extends ObjPool {
 
+  constructor ( opt= {} ) {
+
+    opt.types = opt.types || {
+      customer: { max: 1 },
+      worker: { max: 3 }
+    };
+    opt.count = Object.keys(opt.types).reduce((acc, key)=>{
+       return acc += opt.types[key].max;
+    },0);
+
+    super(opt);
+    this.population = opt.population || [];
+    this.population.forEach((person)=>{
+       person.active = false;
+    });
+    this.types = opt.types;
+  }
+
+  spawn () {
+    
+
+  }
+  
+}
 /********* **********
   5.0) PathFinder
 ********** *********/
@@ -1909,11 +1947,24 @@ StateMachine.states.boot = {
 
   init: function(sm) {
     // set up sm.people
-    sm.people = new ObjPool({
-      count: conf.MAX_OBJECTS.total, 
+    //sm.people = new ObjPool({
+    //  count: conf.MAX_OBJECTS.total, 
+    //  w: conf.tile_size, h: conf.tile_size, 
+    //  sheets:[simg_pool_customer, simg_pool_worker]
+    //});
+    sm.people = new Population({
+      populaiton : conf.POPULATION,
+      types: {
+        worker: { max: conf.MAX_OBJECTS.worker },
+        customer: { max: conf.MAX_OBJECTS.customer }
+      },
       w: conf.tile_size, h: conf.tile_size, 
       sheets:[simg_pool_customer, simg_pool_worker]
     });
+    
+    console.log('sm.people:');
+    console.log(sm.people);
+    
     // check for saves in local storage + load or create a saves and set up sm.money and sm.map in the process
     //localStorage.clear();
     const saves = localStorage.getItem('micro_store_saves');

@@ -20,6 +20,7 @@
 * can view current state of sm.people type workers
 
 <!-- new fixed population for people objects -->
+* start a new population class that is a Super class of ObjPool
 * (pending) - new fixed population database for workers and customers 
 * (pending) - when a person object spawns in that person object must have an id in the pop database
 * (pending) - a max person type can be higher than the population, but still be the max in the store.
