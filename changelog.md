@@ -22,8 +22,8 @@
 <!-- new fixed population for people objects -->
 * start a new population class that is a Super class of ObjPool
 * register all objects as a set type once in the constructor of Population
-* (pending) - have a Population.spawn method and use that as part of sm.spawn
-* (pending) - when a person object spawns in that person object must have an id in the pop database
+* have a Population.spawn method and use that as part of sm.spawn
+* when a person object spawns that person must have an id in the pop database
 * (pending) - sm.spawn should be updated to spawn a certain person OR a type of person
 * (pending) - if all people in population are active, then no one spawns
 

@@ -461,17 +461,31 @@ class Population extends ObjPool {
     return null;
   }
   
+  reset () {
+     this.population.forEach((rec)=>{
+        rec.active = false;
+     });
+     this.objects.forEach((obj)=>{
+        obj.active = false;
+     });
+  };
+  
   spawn (opt){
     opt = Object.assign({}, { type:"worker", pop_id: null }, opt)
-    
     const rec = this.get_pop_rec(opt);
     if(rec){
-      
-      if(!rec.active){
-        
+      const options = this.objects.filter((obj)=>{
+         return obj.data.type === rec.type && !obj.active;
+      });
+      if(!rec.active && options.length >= 1){
+        const obj = options[0];
+        obj.active = true;
+        rec.active = true;
+        obj.data.rec = rec;
+        return obj;
       }
     }
-  
+    return null;
   }
 }
 /********* **********
@@ -1795,11 +1809,19 @@ StateMachine.render_revision_string = function(ctx, x, y){
 // spawn an object_type for sm.people into sm.map at a given spawn location index
 StateMachine.spawn = function ( object_type='customer', spawn_index=0 ) {
 
- 
-
-/*
   const sm = this;
   const map = sm.map;
+  
+  const spawn_pos = map.spawn_locations[spawn_index];
+  const obj = sm.people.spawn({type: object_type });
+  if(obj){
+    const pos = map.pos_to_px(spawn_pos.x, spawn_pos.y);
+    obj.x = pos.x;
+    obj.y = pos.y;
+    obj.simg = sm.people.sheets[object_type === 'customer' ? 0 : 1];
+  }
+  
+  /*
   const type_count = sm.people.get_data_count('type', object_type);
   if( type_count < conf.MAX_OBJECTS[object_type] ){
     const obj = sm.people.get_inactive();
@@ -1814,6 +1836,7 @@ StateMachine.spawn = function ( object_type='customer', spawn_index=0 ) {
     }
   }
   */
+  
 };
 
 StateMachine.is_shelf = function(tile){
@@ -2427,7 +2450,7 @@ StateMachine.states.staff = {
        const obj = workers[ iw ];
        const pos = sm.map.px_to_pos(obj.x, obj.y);
        const worker_status = 'iw: ' + iw + ' active: ' + obj.active + ' pos: ( ' + 
-         pos.x + ',' + pos.y + ')';
+         pos.x + ',' + pos.y + ')' + ' name: ' + obj.data.rec.name;
        ctx.fillText(worker_status, 20, 50 + 15 * iw);
        iw += 1;
     }
