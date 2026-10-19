@@ -416,11 +416,11 @@ class Population extends ObjPool {
 
     super(opt);
     this.population = opt.population || [];
-    /*
+    
     this.population.forEach( (person) => {
        person.active = false;
     });
-    */
+    
     this.types = opt.types;
     
     let i_key = 0, i=0;
@@ -439,11 +439,40 @@ class Population extends ObjPool {
     }
   }
 
-  spawn () {
-    
-
+  get_pop_rec (opt={}) {
+    opt = Object.assign({}, { type:"worker", pop_id: null }, opt);
+    // if given a pop id use that to get the population record
+    if(opt.pop_id != null){
+      const options = this.population.filter((rec)=>{
+        return rec.id === opt.pop_id;
+      });
+      if(options.length >= 1){
+        return options[0];
+      }
+      return null;
+    }
+    // when getting by type, return by random inactive
+    const options = this.population.filter((rec)=>{
+      return rec.type === opt.type && !rec.active;
+    });
+    if(options.length >= 1){
+      return options[ Math.floor( Math.random() * options.length ) ];
+    }
+    return null;
   }
   
+  spawn (opt){
+    opt = Object.assign({}, { type:"worker", pop_id: null }, opt)
+    
+    const rec = this.get_pop_rec(opt);
+    if(rec){
+      
+      if(!rec.active){
+        
+      }
+    }
+  
+  }
 }
 /********* **********
   5.0) PathFinder
@@ -1763,8 +1792,12 @@ StateMachine.render_revision_string = function(ctx, x, y){
   ctx.fillText('MicroThrift Rev:' + conf.R, x, y );
 };
 
-// spawn an object_type for sm.people
+// spawn an object_type for sm.people into sm.map at a given spawn location index
 StateMachine.spawn = function ( object_type='customer', spawn_index=0 ) {
+
+ 
+
+/*
   const sm = this;
   const map = sm.map;
   const type_count = sm.people.get_data_count('type', object_type);
@@ -1780,6 +1813,7 @@ StateMachine.spawn = function ( object_type='customer', spawn_index=0 ) {
       obj.simg = sm.people.sheets[object_type === 'customer' ? 0 : 1];
     }
   }
+  */
 };
 
 StateMachine.is_shelf = function(tile){
@@ -1960,7 +1994,7 @@ StateMachine.states.boot = {
     //  sheets:[simg_pool_customer, simg_pool_worker]
     //});
     sm.people = new Population({
-      populaiton : conf.POPULATION,
+      population : conf.POPULATION,
       types: {
         worker: { max: conf.MAX_OBJECTS.worker },
         customer: { max: conf.MAX_OBJECTS.customer }
@@ -2304,6 +2338,8 @@ StateMachine.states.floor = {
   
     StateMachine.game_state_switcher.init(sm);
   
+   console.log( this.people.get_pop_rec({ pop_id: 17 }) );
+  
   },
 
   update: function(sm, t) {
@@ -2390,8 +2426,8 @@ StateMachine.states.staff = {
     while(iw < len){
        const obj = workers[ iw ];
        const pos = sm.map.px_to_pos(obj.x, obj.y);
-       const worker_status = iw + ' ' +
-         pos.x + ',' + pos.y;
+       const worker_status = 'iw: ' + iw + ' active: ' + obj.active + ' pos: ( ' + 
+         pos.x + ',' + pos.y + ')';
        ctx.fillText(worker_status, 20, 50 + 15 * iw);
        iw += 1;
     }

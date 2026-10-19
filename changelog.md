@@ -22,10 +22,10 @@
 <!-- new fixed population for people objects -->
 * start a new population class that is a Super class of ObjPool
 * register all objects as a set type once in the constructor of Population
-* (pending) - have a Population.spawn method and use that in place of StateMachine.spawn
+* (pending) - have a Population.spawn method and use that as part of sm.spawn
 * (pending) - when a person object spawns in that person object must have an id in the pop database
-
-
+* (pending) - sm.spawn should be updated to spawn a certain person OR a type of person
+* (pending) - if all people in population are active, then no one spawns
 
 <!-- workers spawn in by schedule -->
 * (pending) - can set up a schedule for a worker in staff state
@@ -33,7 +33,9 @@
 * (pending) - schedule will now need to be part of a game save
 
 <!-- customers spawn in by way of GameTime state -->
-* (pending) - start a new system for spawning of customers based on gameTime
+* (pending) - have a spawn chance, and spawn rolls per hour for calling sm.spawn for type customer
+* (pending) - have an array of spawn limiting values for each game hour of a game day
+* (pending) - have a count of items a person will buy and then leave
 
 <!-- hire and fire in staff state -->
 * (pending) - can hire a worker in staff state
