@@ -416,10 +416,27 @@ class Population extends ObjPool {
 
     super(opt);
     this.population = opt.population || [];
-    this.population.forEach((person)=>{
+    /*
+    this.population.forEach( (person) => {
        person.active = false;
     });
+    */
     this.types = opt.types;
+    
+    let i_key = 0, i=0;
+    const keys = Object.keys(this.types);
+    while(i_key < keys.length){
+      const t = this.types[ keys[ i_key ] ];
+      let i_t = 0;
+      while(i_t < t.max){
+        const obj = this.objects[i];
+        obj.data.type = keys[i_key];
+        obj.data.id= keys[i_key] + ':' + i_t;
+        i_t += 1;
+        i += 1;
+      }
+      i_key += 1;
+    }
   }
 
   spawn () {
@@ -1920,16 +1937,6 @@ StateMachine.game_state_switcher = {
       }
     });
     
-    // render over test
-    //bg.buttons[0].render_over = function(ctx) {
-    //  ctx.fillStyle = 'red';
-    //  ctx.textBaseline = 'top';
-    //  ctx.fillText('floor', this.x, this.y);
-    //};
-    
-    //const button = sm.bg_gs_switch.buttons[index];
-    //sm.bg_gs_switch.set_active( button );
-    
   },
   
   render: function(sm, ctx, canvas){
@@ -1963,7 +1970,9 @@ StateMachine.states.boot = {
     });
     
     console.log('sm.people:');
-    console.log(sm.people);
+    sm.people.objects.forEach((obj)=>{
+      console.log(obj.data);
+    });
     
     // check for saves in local storage + load or create a saves and set up sm.money and sm.map in the process
     //localStorage.clear();
@@ -1988,9 +1997,9 @@ StateMachine.states.boot = {
     }
     
     // start main_menu state, or jump directly into floor state at this point.
-    //StateMachine.set_state('floor');
+    StateMachine.set_state('floor');
     //StateMachine.set_state('save_manager');
-    StateMachine.set_state('main_menu');
+    //StateMachine.set_state('main_menu');
   },
 
   update: function(sm, t) {},

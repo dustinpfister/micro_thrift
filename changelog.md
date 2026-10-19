@@ -21,9 +21,11 @@
 
 <!-- new fixed population for people objects -->
 * start a new population class that is a Super class of ObjPool
-* (pending) - new fixed population database for workers and customers 
+* register all objects as a set type once in the constructor of Population
+* (pending) - have a Population.spawn method and use that in place of StateMachine.spawn
 * (pending) - when a person object spawns in that person object must have an id in the pop database
-* (pending) - a max person type can be higher than the population, but still be the max in the store.
+
+
 
 <!-- workers spawn in by schedule -->
 * (pending) - can set up a schedule for a worker in staff state
