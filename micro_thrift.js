@@ -56,6 +56,15 @@ conf.palette_1 = ['', 'black', 'white', 'tan',
   'red', 'lime', 'blue', 'yellow', 'cyan', 'purple'];
 conf.SAVE_DEFAULT = {
   money: 0,
+  schedule: [{
+    pop_id: 0,
+    days: {
+      0 : { per_in: 0.25, per_out: 0.70 },
+      3 : { per_in: 0.00, per_out: 0.50 },
+      4 : { per_in: 0.20, per_out: 0.70 },
+      6 : { per_in: 0.00, per_out: 1.00 }
+    }
+  }],
   map_data: {
     17 : 'b03', 19 : 'b03', 33 : 'b03', 35 : 'b03',
     65 : 'b03', 81 : 'b03',  97 : 'b03', 113 : 'b03', 129 : 'b03', 145 : 'b03',
@@ -1737,6 +1746,9 @@ StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
      date_str: save_obj.date_str || conf.GT_DEFAULTS.date_str
   }));
   sm.money = save_obj.money;
+  
+  sm.schedule = save_obj.schedule || conf.SAVE_DEFAULT.schedule;
+  
   sm.map = new WMap({
       width: 16, height: 16,
       sx: 5, sy: 48 - 5,
@@ -2304,6 +2316,8 @@ StateMachine.states.floor = {
 
     console.log('game speed: ' + sm.time.game_speed);
     console.log('move fps  : ' + sm.move_fps);
+
+    console.log(sm.schedule);
 
     data.bg = new UI.ButtonGrid({
       x: sm.map.sx + conf.tile_size * sm.map.width + 5,

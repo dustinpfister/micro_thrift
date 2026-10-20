@@ -24,10 +24,12 @@
 * when a person object spawns that person must have an id in the pop database
 * sm.spawn updated to spawn a certain person by pop id OR a type of person
 * fixed bug with Population.reset when starting a new game
+* just set up an array of schedule objects as part of load save process for now
 
 <!-- workers spawn in by schedule -->
-* (pending) - can set up a schedule for a worker in staff state
+
 * (pending) - workers will show up, and leave based on GameTime events
+* (pending) - can set up a schedule for a worker in staff state
 * (pending) - schedule will now need to be part of a game save
 
 <!-- customers spawn in by way of GameTime state -->
