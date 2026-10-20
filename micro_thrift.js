@@ -471,7 +471,7 @@ class Population extends ObjPool {
   };
   
   spawn (opt){
-    opt = Object.assign({}, { type:"worker", pop_id: null }, opt)
+    opt = Object.assign({}, { type:"worker", pop_id: null }, opt);
     const rec = this.get_pop_rec(opt);
     if(rec){
       const options = this.objects.filter((obj)=>{
@@ -1807,36 +1807,18 @@ StateMachine.render_revision_string = function(ctx, x, y){
 };
 
 // spawn an object_type for sm.people into sm.map at a given spawn location index
-StateMachine.spawn = function ( object_type='customer', spawn_index=0 ) {
-
+StateMachine.spawn = function ( opt = {} ) {
+  opt = Object.assign({}, { type: 'customer', pop_id: null, spawn_index : 0 }, opt)
   const sm = this;
   const map = sm.map;
-  
-  const spawn_pos = map.spawn_locations[spawn_index];
-  const obj = sm.people.spawn({type: object_type });
+  const spawn_pos = map.spawn_locations[opt.spawn_index];
+  const obj = sm.people.spawn(opt);
   if(obj){
     const pos = map.pos_to_px(spawn_pos.x, spawn_pos.y);
     obj.x = pos.x;
     obj.y = pos.y;
-    obj.simg = sm.people.sheets[object_type === 'customer' ? 0 : 1];
+    obj.simg = sm.people.sheets[obj.data.type === 'customer' ? 0 : 1];
   }
-  
-  /*
-  const type_count = sm.people.get_data_count('type', object_type);
-  if( type_count < conf.MAX_OBJECTS[object_type] ){
-    const obj = sm.people.get_inactive();
-    const spawn_pos = map.spawn_locations[spawn_index];
-    if(obj){
-      obj.active = true;
-      obj.data.type = object_type;
-      const pos = map.pos_to_px(spawn_pos.x, spawn_pos.y);
-      obj.x = pos.x;
-      obj.y = pos.y;
-      obj.simg = sm.people.sheets[object_type === 'customer' ? 0 : 1];
-    }
-  }
-  */
-  
 };
 
 StateMachine.is_shelf = function(tile){
@@ -1917,9 +1899,15 @@ StateMachine.game_render = function(sm, ctx, canvas) {
 };
 
 StateMachine.game_update = (sm, t) => {
-  sm.spawn('customer');
-  sm.spawn('worker');
   
+  sm.spawn({type: 'customer', spawn_index: 0});
+  //sm.spawn({type: 'worker', spawn_index: 0});
+
+  // can spawn by a given pop_id also
+  sm.spawn({pop_id: 1, spawn_index: 0});
+  
+
+
   //const min_per_day = 1 / 60 * 90;
   //sm.time.set_game_speed( min_per_day );
   //sm.move_fps = 1 + 29 * Math.floor( sm.time.game_speed * 0.01  );
@@ -2449,8 +2437,11 @@ StateMachine.states.staff = {
     while(iw < len){
        const obj = workers[ iw ];
        const pos = sm.map.px_to_pos(obj.x, obj.y);
-       const worker_status = 'iw: ' + iw + ' active: ' + obj.active + ' pos: ( ' + 
-         pos.x + ',' + pos.y + ')' + ' name: ' + obj.data.rec.name;
+       const rec = obj.data.rec || { name: 'NA', id: 'NA' }
+       const worker_status = 'pop_id: ' + String(rec.id).padStart(2, ' ') +
+         ' active: ' + String(obj.active).padStart(5, ' ') + ' pos: ( ' + 
+         String(pos.x).padStart(3, ' ') + ',' + String(pos.y).padStart(3, ' ') + ')' + 
+         ' name: ' + rec.name;
        ctx.fillText(worker_status, 20, 50 + 15 * iw);
        iw += 1;
     }

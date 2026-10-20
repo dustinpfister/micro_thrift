@@ -18,14 +18,11 @@
 * can add an render_over option for Button class instances
 * general render over method for Button Grid class
 * can view current state of sm.people type workers
-
-<!-- new fixed population for people objects -->
 * start a new population class that is a Super class of ObjPool
 * register all objects as a set type once in the constructor of Population
 * have a Population.spawn method and use that as part of sm.spawn
 * when a person object spawns that person must have an id in the pop database
-* (pending) - sm.spawn should be updated to spawn a certain person OR a type of person
-* (pending) - if all people in population are active, then no one spawns
+* sm.spawn updated to spawn a certain person by pop id OR a type of person
 
 <!-- workers spawn in by schedule -->
 * (pending) - can set up a schedule for a worker in staff state
