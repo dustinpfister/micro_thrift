@@ -1,6 +1,6 @@
 # micro_thrift change log
 
-## R3 () - GameTime, Staff state, Budget state
+## R3 () - GameTime, Population, Staff state, Budget state
 * added a game update method that can be called in any state beyond just floor state.
 * start a GameTime system that will translate real time to game time
 * create a new instance of GameTime as sm.time when a new game is loaded
@@ -23,6 +23,7 @@
 * have a Population.spawn method and use that as part of sm.spawn
 * when a person object spawns that person must have an id in the pop database
 * sm.spawn updated to spawn a certain person by pop id OR a type of person
+* fixed bug with Population.reset when starting a new game
 
 <!-- workers spawn in by schedule -->
 * (pending) - can set up a schedule for a worker in staff state
@@ -36,7 +37,6 @@
 
 <!-- hire and fire in staff state -->
 * (pending) - can hire a worker in staff state
-* (pending) - can fire a worker in staff state
 
 <!-- edit schedule -->
 

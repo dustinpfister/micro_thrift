@@ -467,6 +467,7 @@ class Population extends ObjPool {
      });
      this.objects.forEach((obj)=>{
         obj.active = false;
+        obj.data.path = [];
      });
   };
   
@@ -1998,12 +1999,6 @@ StateMachine.states.boot = {
   pointer : function(sm, x, y, e) {},
 
   init: function(sm) {
-    // set up sm.people
-    //sm.people = new ObjPool({
-    //  count: conf.MAX_OBJECTS.total, 
-    //  w: conf.tile_size, h: conf.tile_size, 
-    //  sheets:[simg_pool_customer, simg_pool_worker]
-    //});
     sm.people = new Population({
       population : conf.POPULATION,
       types: {
@@ -2012,11 +2007,6 @@ StateMachine.states.boot = {
       },
       w: conf.tile_size, h: conf.tile_size, 
       sheets:[simg_pool_customer, simg_pool_worker]
-    });
-    
-    console.log('sm.people:');
-    sm.people.objects.forEach((obj)=>{
-      console.log(obj.data);
     });
     
     // check for saves in local storage + load or create a saves and set up sm.money and sm.map in the process
@@ -2042,9 +2032,9 @@ StateMachine.states.boot = {
     }
     
     // start main_menu state, or jump directly into floor state at this point.
-    StateMachine.set_state('floor');
+    //StateMachine.set_state('floor');
     //StateMachine.set_state('save_manager');
-    //StateMachine.set_state('main_menu');
+    StateMachine.set_state('main_menu');
   },
 
   update: function(sm, t) {},
