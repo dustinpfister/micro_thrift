@@ -59,13 +59,13 @@ conf.SAVE_DEFAULT = {
   schedule: [{
     pop_id: 1,
     days: {
-      0 : { per_in: 0.25, per_out: 0.75 },
-      1 : { per_in: 0.25, per_out: 0.75 },
-      2 : { per_in: 0.25, per_out: 0.75 },
-      3 : { per_in: 0.25, per_out: 0.75 },
-      4 : { per_in: 0.25, per_out: 0.75 },
-      5 : { per_in: 0.25, per_out: 0.75 },
-      6 : { per_in: 0.25, per_out: 0.75 }
+      0 : { clock_in: [9,0,0], clock_out: [20,0,0] },
+      1 : { clock_in: [9,0,0], clock_out: [20,0,0] },
+      2 : { clock_in: [9,0,0], clock_out: [20,0,0] },
+      3 : { clock_in: [9,0,0], clock_out: [20,0,0] },
+      4 : { clock_in: [9,0,0], clock_out: [20,0,0] },
+      5 : { clock_in: [9,0,0], clock_out: [20,0,0] },
+      6 : { clock_in: [9,0,0], clock_out: [20,0,0] }
     }
   }],
   map_data: {
@@ -476,6 +476,7 @@ class Population extends ObjPool {
   reset () {
      this.population.forEach((rec)=>{
         rec.active = false;
+        rec.obj = null;
      });
      this.objects.forEach((obj)=>{
         obj.active = false;
@@ -494,6 +495,7 @@ class Population extends ObjPool {
         const obj = options[0];
         obj.active = true;
         rec.active = true;
+        rec.obj = obj;
         obj.data.rec = rec;
         return obj;
       }
@@ -1316,7 +1318,6 @@ AI.move = (sm, obj) => {
   if(!path){
     return;
   }
-  //if(obj.active && path.length > 0 && d.move_frame === 0){
   if(obj.active && path.length > 0 && !d.pos_next ){
     d.pos_now = map.px_to_pos( obj.x, obj.y ); 
     d.pos_next = path.pop();
@@ -1376,15 +1377,15 @@ AI.set_path_to_target = (sm, obj) => {
   }
   const pos1 = sm.map.px_to_pos(obj.x, obj.y);
   return sm.map.get_path( walk_target.x, walk_target.y, pos1.x, pos1.y)
-    .then( (path_new) => {
-      if(path_new){
-        obj.data.path = path_new;
-        return Promise.resolve({ e: '0', mess: 'path set' });
-      }
-      if(!path_new){
-        return Promise.reject({ e: '3', mess: 'null path'});
-      }
-    });
+  .then( (path_new) => {
+    if(path_new){
+      obj.data.path = path_new;
+      return Promise.resolve({ e: '0', mess: 'path set' });
+    }
+    if(!path_new){
+      return Promise.reject({ e: '3', mess: 'null path'});
+    }
+   });
 };
 
 /********* **********
@@ -1402,53 +1403,94 @@ AI.main = function( sm, obj ){
 AI.worker = function(sm, obj){
   const map = sm.map;
 
-  if(!obj.data.target){
+  if(obj.data.rec.active){
     AI.set_rnd_target(sm, obj, [3,4,5]);
+    if(obj.data.target){
+      AI.set_path_to_target(sm, obj)
+      .then(()=>{
+      
+          
+      
+        const t = obj.data.walk_target;
+        const pos1 = map.px_to_pos(obj.x, obj.y);
+        
+        if(t === null || pos1 === null){
+           return Promise.reject({ e: 4, mess: 'null value in code after calling set rnd target'});
+        }
+        
+        const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
+        if(d === 0){
+          const target = obj.data.target;
+          // !!!R0 : just basic random selection for now
+          const item_index = Math.floor( conf.items.length * Math.random() );
+          const item_gen = conf.items[ item_index ];
+          // !!!R0 : pricing items by value_index +- 3 randomly
+          let price_index = item_gen.value_index - 3 + Math.round( Math.random() * 6 );
+          price_index  = price_index < 0 ? 0 : price_index;
+          price_index = price_index >= conf.price_options.length ? conf.price_options.length - 1 : price_index; 
+          StateMachine.stock_item(target, item_index, price_index);
+          obj.data.target = null;
+          obj.data.walk_target = null;
+        }
+      })
+      .catch((res)=>{
+      
+        const e = res.e || '-1'
+      
+        console.log(e, res.mess)
+      
+        if(e === 4){
+          obj.data.target = null;
+        }
+      
+        if(e === '2'){
+          console.log('no walkabule border tiles for target');
+          obj.data.target = null;
+          obj.data.walk_target = null;
+          obj.data.move_frame = 0;
+        }
+        if(e === '3'){
+          const pos = sm.map.px_to_pos(obj.x, obj.y);
+          sm.map.stuck_check(pos.x, pos.y).then((stuck)=>{
+            if(stuck){
+              console.log('stuck!');
+              obj.active = false;  
+              obj.data = {};
+            }
+            if(!stuck){
+              console.log(' not stuck, so just get a new target ');
+              obj.data.target = null;
+              obj.data.walk_target = null;
+            }
+          })
+        }
+      });
+    }
   }
-
-  if(obj.data.target){
+  
+  if(!obj.data.rec.active){
+  
+    //console.log('non active pop member');
+    //console.log(obj.data.target);
+  
+    if(!obj.data.target){
+      AI.set_rnd_target(sm, obj, [6]);
+      console.log('new target set for non active pop member!');
+      //console.log(obj.data.target);
+    }
+  
     AI.set_path_to_target(sm, obj)
     .then(()=>{
+    
       const t = obj.data.walk_target;
       const pos1 = map.px_to_pos(obj.x, obj.y);
+        
       const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
       if(d === 0){
-        const target = obj.data.target;
-        // !!!R0 : just basic random selection for now
-        const item_index = Math.floor( conf.items.length * Math.random() );
-        const item_gen = conf.items[ item_index ];
-        // !!!R0 : pricing items by value_index +- 3 randomly
-        let price_index = item_gen.value_index - 3 + Math.round( Math.random() * 6 );
-        price_index  = price_index < 0 ? 0 : price_index;
-        price_index = price_index >= conf.price_options.length ? conf.price_options.length - 1 : price_index; 
-        StateMachine.stock_item(target, item_index, price_index);
-        obj.data.target = null;
-        obj.data.walk_target = null;
+        obj.active = false;
       }
     })
-    .catch((res)=>{
-      console.log('e' + res.e);
-      if(res.e === '2'){
-        console.log('no walkabule border tiles for target');
-        obj.data.target = null;
-        obj.data.walk_target = null;
-      }
-      if(res.e === '3'){
-        const pos = sm.map.px_to_pos(obj.x, obj.y);
-        sm.map.stuck_check(pos.x, pos.y).then((stuck)=>{
-          if(stuck){
-            console.log('stuck!');
-            obj.active = false;  
-            obj.data = {};
-          }
-          if(!stuck){
-            console.log(' not stuck, so just get a new target ');
-            obj.data.target = null;
-            obj.data.walk_target = null;
-          }
-        })
-      }
-    });
+    
   }
   
 };
@@ -1823,7 +1865,7 @@ StateMachine.render_revision_string = function(ctx, x, y){
 
 // spawn an object_type for sm.people into sm.map at a given spawn location index
 StateMachine.spawn = function ( opt = {} ) {
-  opt = Object.assign({}, { type: 'customer', pop_id: null, spawn_index : 0 }, opt)
+  opt = Object.assign({}, { type: 'customer', pop_id: null, spawn_index : 0 }, opt);
   const sm = this;
   const map = sm.map;
   const spawn_pos = map.spawn_locations[opt.spawn_index];
@@ -1833,6 +1875,22 @@ StateMachine.spawn = function ( opt = {} ) {
     obj.x = pos.x;
     obj.y = pos.y;
     obj.simg = sm.people.sheets[obj.data.type === 'customer' ? 0 : 1];
+  }
+};
+
+// have an active pop id leave ( if it is active )
+StateMachine.leave = function ( opt = {} ) {
+  opt = Object.assign({}, { pop_id: null, spawn_index : 0 }, opt);
+  const sm = this;
+  const rec = sm.people.get_pop_rec({pop_id: opt.pop_id});
+  if(rec.active && rec.obj){
+    rec.active = false;
+    rec.obj.data.path = [];
+    rec.obj.data.target = null;
+    rec.obj.data.walk_target = null;
+    rec.obj.data.pos_next = null;
+    rec.obj.data.move_frame = 0;
+    console.log('leave')
   }
 };
 
@@ -1926,14 +1984,10 @@ StateMachine.game_update = (sm, t) => {
     start_hours: [10,0,0],
     end_hours: [12,0,0],
     idle: () => { 
-      
-      console.log('idle');
-      
+      sm.leave({pop_id: 1, spawn_index: 0});
     },
     update: () => { 
-      
       sm.spawn({pop_id: 1, spawn_index: 0});
-      
     }
   });
   // can spawn by a given pop_id also
@@ -2373,9 +2427,7 @@ StateMachine.states.floor = {
   
     StateMachine.game_state_switcher.init(sm);
   
-  
-    console.log( this.people.get_pop_rec({ pop_id: 17 }) );
-  
+ 
   },
 
   update: function(sm, t) {

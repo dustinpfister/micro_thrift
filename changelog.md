@@ -26,9 +26,10 @@
 * fixed bug with Population.reset when starting a new game
 * just set up an array of schedule objects as part of load save process for now
 * workers will show up, and leave based on GameTime events
+* new sm.leave method to get people objects to head to the exit
 
 <!-- workers spawn in by schedule -->
-* (pending) - new sm.leave method to get people objects to head to the exit
+* (pending) - make use of sm.schedule clock in and out times
 * (pending) - can set up a schedule for a worker in staff state
 * (pending) - schedule will now need to be part of a game save
 
