@@ -27,9 +27,10 @@
 * just set up an array of schedule objects as part of load save process for now
 * workers will show up, and leave based on GameTime events
 * new sm.leave method to get people objects to head to the exit
+* make use of sm.schedule clock in and out times
 
 <!-- workers spawn in by schedule -->
-* (pending) - make use of sm.schedule clock in and out times
+* (pending) - fixed an isshue with time binding
 * (pending) - can set up a schedule for a worker in staff state
 * (pending) - schedule will now need to be part of a game save
 

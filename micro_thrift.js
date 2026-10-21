@@ -50,24 +50,57 @@ conf.POPULATION = [
   { id:6, name: 'siera',  type: 'customer' }
 ];
 conf.LOOP_MS_DELAY = 33; // number of ms to delay each frame in main app loop
-conf.MINUITES_PER_DAY = 1;
+conf.MINUITES_PER_DAY = 0.25;
 conf.tile_size = 27;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
   'red', 'lime', 'blue', 'yellow', 'cyan', 'purple'];
 conf.SAVE_DEFAULT = {
   money: 0,
-  schedule: [{
-    pop_id: 1,
-    days: {
-      0 : { clock_in: [9,0,0], clock_out: [20,0,0] },
-      1 : { clock_in: [9,0,0], clock_out: [20,0,0] },
-      2 : { clock_in: [9,0,0], clock_out: [20,0,0] },
-      3 : { clock_in: [9,0,0], clock_out: [20,0,0] },
-      4 : { clock_in: [9,0,0], clock_out: [20,0,0] },
-      5 : { clock_in: [9,0,0], clock_out: [20,0,0] },
-      6 : { clock_in: [9,0,0], clock_out: [20,0,0] }
+  schedule: [
+    {
+      pop_id: 0,
+      days: {
+        0 : { clock_in: [ 11, 0,0], clock_out: [18, 0,0] },
+        1 : { clock_in: [  9,30,0], clock_out: [18, 0,0] },
+        2 : { clock_in: [  9,30,0], clock_out: [18, 0,0] },
+        3 : { clock_in: [  9,30,0], clock_out: [18, 0,0] }
+      }
+    },
+    {
+      pop_id: 1,
+      days: {
+        0 : { clock_in: [ 9, 0,0], clock_out: [18, 0,0] },
+        1 : { clock_in: [ 9,30,0], clock_out: [13,30,0] },
+        2 : { clock_in: [ 9,30,0], clock_out: [18, 0,0] },
+        5 : { clock_in: [ 9, 0,0], clock_out: [18,0,0] },
+        6 : { clock_in: [ 11,0,0], clock_out: [20,0,0] }
+      }
+    },
+    {
+      pop_id: 3,
+      days: {
+        0 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
+        1 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
+        2 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
+        3 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
+        4 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
+        5 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
+        6 : { clock_in: [12, 0,0], clock_out: [15, 0,0] }
+      }
+    },
+    {
+      pop_id: 4,
+      days: {
+        0 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
+        1 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
+        2 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
+        3 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
+        4 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
+        5 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
+        6 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] }
+      }
     }
-  }],
+  ],
   map_data: {
     17 : 'b03', 19 : 'b03', 33 : 'b03', 35 : 'b03',
     65 : 'b03', 81 : 'b03',  97 : 'b03', 113 : 'b03', 129 : 'b03', 145 : 'b03',
@@ -81,7 +114,7 @@ conf.SAVE_DEFAULT = {
   }
 };
 conf.MAX_OBJECTS = {  // max number of display objects used for sm.people
-  worker: 3,
+  worker: 4,
   customer: 3
 };
 conf.MAX_SHELF_ITEMS = 10;
@@ -1009,6 +1042,10 @@ class GameTime {
         hour: '2-digit', minute: '2-digit', hour12: true
       });
     }
+    
+    get_week_index (){
+      return this.date.getDay();
+    }
 
     get_per_from_hours ( h=0, min=0, sec=0) {
       const day_secs = h * 3600 + min * 60 + sec;
@@ -1786,8 +1823,8 @@ StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
   const sm = this;
   sm.lu = new Date(save_obj.lu);
   sm.time = new GameTime(Object.assign({}, conf.GT_DEFAULTS, {
-     //date_str: save_obj.date_str || conf.GT_DEFAULTS.date_str
-     date_str: '2000-01-01T00:00:00'
+     date_str: save_obj.date_str || conf.GT_DEFAULTS.date_str
+     //date_str: '2000-01-01T00:00:00'
   }));
   sm.money = save_obj.money;
   
@@ -1980,16 +2017,26 @@ StateMachine.game_update = (sm, t) => {
 
   // worker schedule events
   sm.time.events = [];
-  sm.time.push_event({
-    start_hours: [10,0,0],
-    end_hours: [12,0,0],
-    idle: () => { 
-      sm.leave({pop_id: 1, spawn_index: 0});
-    },
-    update: () => { 
-      sm.spawn({pop_id: 1, spawn_index: 0});
-    }
-  });
+  
+  const day_index = sm.time.get_week_index();
+  
+  sm.schedule.forEach( (sch) => {
+   const today = sch.days[day_index];
+   if(today){
+     
+     sm.time.push_event({
+       start_hours: today.clock_in,
+       end_hours: today.clock_out,
+       idle: () => { 
+         sm.leave({pop_id: sch.pop_id, spawn_index: 0});
+       },
+       update: () => { 
+         sm.spawn({pop_id: sch.pop_id, spawn_index: 0});
+       }
+    });
+  }
+  
+  })
   // can spawn by a given pop_id also
   
   
@@ -2025,7 +2072,7 @@ StateMachine.game_update = (sm, t) => {
   localStorage.setItem('micro_store_saves', saves_str);
   
   sm.time.update(t);
-  sm.time.bind_to_hours();
+  //sm.time.bind_to_hours();
   
 };
 
