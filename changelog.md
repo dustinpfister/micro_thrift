@@ -25,10 +25,10 @@
 * sm.spawn updated to spawn a certain person by pop id OR a type of person
 * fixed bug with Population.reset when starting a new game
 * just set up an array of schedule objects as part of load save process for now
+* workers will show up, and leave based on GameTime events
 
 <!-- workers spawn in by schedule -->
-
-* (pending) - workers will show up, and leave based on GameTime events
+* (pending) - new sm.leave method to get people objects to head to the exit
 * (pending) - can set up a schedule for a worker in staff state
 * (pending) - schedule will now need to be part of a game save
 

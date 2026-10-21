@@ -57,12 +57,15 @@ conf.palette_1 = ['', 'black', 'white', 'tan',
 conf.SAVE_DEFAULT = {
   money: 0,
   schedule: [{
-    pop_id: 0,
+    pop_id: 1,
     days: {
-      0 : { per_in: 0.25, per_out: 0.70 },
-      3 : { per_in: 0.00, per_out: 0.50 },
-      4 : { per_in: 0.20, per_out: 0.70 },
-      6 : { per_in: 0.00, per_out: 1.00 }
+      0 : { per_in: 0.25, per_out: 0.75 },
+      1 : { per_in: 0.25, per_out: 0.75 },
+      2 : { per_in: 0.25, per_out: 0.75 },
+      3 : { per_in: 0.25, per_out: 0.75 },
+      4 : { per_in: 0.25, per_out: 0.75 },
+      5 : { per_in: 0.25, per_out: 0.75 },
+      6 : { per_in: 0.25, per_out: 0.75 }
     }
   }],
   map_data: {
@@ -1007,16 +1010,14 @@ class GameTime {
 
     get_per_from_hours ( h=0, min=0, sec=0) {
       const day_secs = h * 3600 + min * 60 + sec;
-      const total_secs = (this.end_hour - this.start_hour) * 3600;
+      const total_secs = 3600 * 24;
       let per = day_secs / total_secs;
-      per = per < 0 ? 0 : per;
-      per = per > 1 ? 1 : per;
       return per; 
     }
 
     get_day_percent(  ) {
       const date = this.date;
-      const h = date.getUTCHours() - this.start_hour;
+      const h = date.getUTCHours();
       const min = date.getUTCMinutes();
       const sec = date.getUTCSeconds();
       const per = this.get_per_from_hours(h, min, sec);
@@ -1743,7 +1744,8 @@ StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
   const sm = this;
   sm.lu = new Date(save_obj.lu);
   sm.time = new GameTime(Object.assign({}, conf.GT_DEFAULTS, {
-     date_str: save_obj.date_str || conf.GT_DEFAULTS.date_str
+     //date_str: save_obj.date_str || conf.GT_DEFAULTS.date_str
+     date_str: '2000-01-01T00:00:00'
   }));
   sm.money = save_obj.money;
   
@@ -1913,11 +1915,29 @@ StateMachine.game_render = function(sm, ctx, canvas) {
 
 StateMachine.game_update = (sm, t) => {
   
+  
+  
   sm.spawn({type: 'customer', spawn_index: 0});
   //sm.spawn({type: 'worker', spawn_index: 0});
 
+  // worker schedule events
+  sm.time.events = [];
+  sm.time.push_event({
+    start_hours: [10,0,0],
+    end_hours: [12,0,0],
+    idle: () => { 
+      
+      console.log('idle');
+      
+    },
+    update: () => { 
+      
+      sm.spawn({pop_id: 1, spawn_index: 0});
+      
+    }
+  });
   // can spawn by a given pop_id also
-  sm.spawn({pop_id: 1, spawn_index: 0});
+  
   
 
 
@@ -2353,7 +2373,8 @@ StateMachine.states.floor = {
   
     StateMachine.game_state_switcher.init(sm);
   
-   console.log( this.people.get_pop_rec({ pop_id: 17 }) );
+  
+    console.log( this.people.get_pop_rec({ pop_id: 17 }) );
   
   },
 
