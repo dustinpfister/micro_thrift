@@ -50,7 +50,7 @@ conf.POPULATION = [
   { id:6, name: 'siera',  type: 'customer' }
 ];
 conf.LOOP_MS_DELAY = 33; // number of ms to delay each frame in main app loop
-conf.MINUITES_PER_DAY = 0.25;
+conf.MINUITES_PER_DAY = 1;
 conf.tile_size = 27;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
   'red', 'lime', 'blue', 'yellow', 'cyan', 'purple'];
@@ -133,7 +133,7 @@ conf.items = [
 conf.GT_DEFAULTS = { // defaults for an instance of the GameTime class
   date: null,
   date_str: "2000-01-01T00:00:00",
-  start_hour: 9, end_hour:20,
+  start_hour: 8, end_hour:21,
   game_speed: 600
 };
 /********* **********
@@ -1097,6 +1097,8 @@ class GameTime {
           this.date.setUTCHours(this.start_hour)
        }
        if(now.getUTCHours() >= this.end_hour){
+          const day = this.date.getDate();
+          this.date.setDate(day + 1);
           this.date.setUTCHours(this.start_hour)
        }
        this.set_to_js_date( this.date );
@@ -1525,6 +1527,7 @@ AI.worker = function(sm, obj){
       const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
       if(d === 0){
         obj.active = false;
+        obj.data.rec = null;
       }
     })
     
@@ -2072,7 +2075,7 @@ StateMachine.game_update = (sm, t) => {
   localStorage.setItem('micro_store_saves', saves_str);
   
   sm.time.update(t);
-  //sm.time.bind_to_hours();
+  sm.time.bind_to_hours();
   
 };
 

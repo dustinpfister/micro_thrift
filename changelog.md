@@ -28,9 +28,10 @@
 * workers will show up, and leave based on GameTime events
 * new sm.leave method to get people objects to head to the exit
 * make use of sm.schedule clock in and out times
+* fixed an isshue with time binding
 
 <!-- workers spawn in by schedule -->
-* (pending) - fixed an isshue with time binding
+
 * (pending) - can set up a schedule for a worker in staff state
 * (pending) - schedule will now need to be part of a game save
 
