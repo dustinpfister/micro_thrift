@@ -38,6 +38,7 @@
 * customer spawns are also pushed into game time events along with workers
 * Population.get\_options method
 * customer spawns will vary in terms of who and when at the start of a new day
+* fixed a bug with customers not buying items
 
 <!-- customers spawn in by way of GameTime events -->
 * (pending) - call pop.reset at the start of a new day

@@ -1452,7 +1452,9 @@ AI.worker = function(sm, obj){
   const map = sm.map;
 
   if(obj.data.rec.active){
-    AI.set_rnd_target(sm, obj, [3,4,5]);
+    if(!obj.data.target){
+      AI.set_rnd_target(sm, obj, [3,4,5]);
+    }
     if(obj.data.target){
       AI.set_path_to_target(sm, obj)
       .then(()=>{
@@ -1536,19 +1538,33 @@ AI.customer = function(sm, obj){
   const target = obj.data.target;
 
   if(obj.data.rec.active){
-    AI.set_rnd_target(sm, obj, [3,4,5]);
+    if(!obj.data.target){
+      AI.set_rnd_target(sm, obj, [3,4,5]);
+    }
+    
     if(obj.data.target){
       AI.set_path_to_target(sm, obj)
       .then( ()=>{
+      
         const t = obj.data.walk_target;
         const pos1 = map.px_to_pos(obj.x, obj.y);
         if(t === null || pos1 === null){
            return Promise.reject({ e: 4, mess: 'null value in code after calling set rnd target'});
         }
         const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
-        const items = target.data.items;
-        if(d === 0 && items.length > 0){
-          
+        
+        let items = [];
+        
+        if(target){
+          items = target.data.items;
+        }
+        
+        if(d === 0 && items.length === 0){
+          obj.data.target = null;
+          obj.data.walk_target = null;
+        }
+        
+        if(d === 0 && items.length > 0){          
           const n = target.data.count = target.data.count -= 1;
           // buy the item
           const buying = items.pop();
@@ -1558,11 +1574,9 @@ AI.customer = function(sm, obj){
           target.frame_index = target.type_index - 3;
           sm.money += buying.price;
           sm.money = parseFloat( sm.money.toFixed(2) )
-   
-   
+          obj.data.target = null;
+          obj.data.walk_target = null;
         }
-        obj.data.target = null;
-        obj.data.walk_target = null;
       })
       .catch((res)=>{
         const e = res.e || '-1'
@@ -2058,20 +2072,19 @@ StateMachine.new_day_check = function() {
       }
     });
     
+    // customers for the day
     const options = sm.people.get_options('customer');
-    
     options.forEach( (rec) => {
-      // customers for the day
-      
       const h_start = 10 + Math.floor( 9 * Math.random() );
       const h_leave = h_start + Math.floor( (20 - h_start) * Math.random() );
       const min1 = Math.floor( 15 * Math.random() );
       const min2 = 20 +  Math.floor( 25 * Math.random() );
       console.log(rec.name + '  ' + h_start + ':' + min1 + ' , ' + h_leave + ':' + min2)
-      
       sm.time.push_event({
         start_hours: [h_start, min1, 0],
         end_hours: [h_leave, min2, 0],
+        //start_hours: [10, min1, 0],
+        //end_hours: [19, min2, 0],
         idle: () => { 
           sm.leave({pop_id: rec.id, spawn_index: 0});
         },
@@ -2079,7 +2092,6 @@ StateMachine.new_day_check = function() {
           sm.spawn({pop_id: rec.id, spawn_index: 0});
         }
       });
-    
     });
     
   }
