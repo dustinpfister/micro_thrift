@@ -50,6 +50,7 @@ conf.POPULATION = [
   { id:6, name: 'siera',  type: 'customer' }
 ];
 conf.LOOP_MS_DELAY = 33; // number of ms to delay each frame in main app loop
+conf.LOOP_MS_AWAY = 1000; // number of ms that will count as the player being away
 conf.MINUITES_PER_DAY = 1;
 conf.tile_size = 27;
 conf.palette_1 = ['', 'black', 'white', 'tan', 
@@ -2639,14 +2640,21 @@ canvas.addEventListener('click', function(e)  {
 
 document.body.appendChild(canvas);
 
-let = lt = new Date();
+let lt = new Date();
 const loop = () => {
   const now = new Date();
   const t = now - lt;
   requestAnimationFrame(loop);
   if(t >= conf.LOOP_MS_DELAY){
+    let dt = t;
+    if(t >= conf.LOOP_MS_AWAY){
+      console.log('The player must have been away for a while.');
+      console.log('t=' + t);
+      console.log('setting delta time to zero...');
+      dt = 0;
+    }
     lt = now;
-    StateMachine.update(t);
+    StateMachine.update(dt);
     StateMachine.render(ctx, canvas);
   }
 };

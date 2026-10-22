@@ -1,5 +1,8 @@
 # micro_thrift change log
 
+## R4 () - 
+* (pending) - state of population now a part of the save state
+
 ## R3 () - GameTime, Population, Staff state, Budget state
 * added a game update method that can be called in any state beyond just floor state.
 * start a GameTime system that will translate real time to game time
@@ -28,12 +31,8 @@
 * workers will show up, and leave based on GameTime events
 * new sm.leave method to get people objects to head to the exit
 * make use of sm.schedule clock in and out times
-* fixed an isshue with time binding
-
-<!-- workers spawn in by schedule -->
-
-* (pending) - can set up a schedule for a worker in staff state
-* (pending) - schedule will now need to be part of a game save
+* fixed a bug with time binding
+* fixed a bug where time would leap forward if tab goes inactive for a while
 
 <!-- customers spawn in by way of GameTime state -->
 * (pending) - have a spawn chance, and spawn rolls per hour for calling sm.spawn for type customer
@@ -44,6 +43,8 @@
 * (pending) - can hire a worker in staff state
 
 <!-- edit schedule -->
+* (pending) - can set up a schedule for a worker in staff state
+* (pending) - schedule is now a part of a game save
 
 <!-- workers cost money -->
 * (pending) - workers will now cost money over time
@@ -52,7 +53,6 @@
 * (pending) - total sales will show in budget
 
 <!-- misc -->
-* (pending) - state of worker population must be part of the save state
 * (pending) - make the options state one of the tab menu states
 * (pending) - make use of object pps again with object pools or remove code
 
