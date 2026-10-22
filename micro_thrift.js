@@ -1315,16 +1315,20 @@ class WMap {
 
   // get a random tile that has one of the type indices in a given array 
   get_random_by_type ( types=[0,1] ) {
-    const options = this.grid.filter(function(obj){
-      return types.some(function(n){
-        return obj.type_index === n;
-      })
-    });
+    const options = this.get_tiles_by_types(types); 
     if(options.length > 0){
       return options[ Math.floor( Math.random() * options.length ) ];
     }
     return null;
   }
+
+  get_tiles_by_types ( types=[0,1] ) {
+    return this.grid.filter(function(tile){
+      return types.some(function(n){
+        return tile.type_index === n;
+      })
+    });
+  } 
 
   render_grid (ctx ) {
     let i = 0;
@@ -1403,6 +1407,11 @@ AI.set_rnd_target = (sm, obj, target_types = [3,4,5] ) => {
     return obj.data.target = a;
   }
   return obj.data.target = null;
+};
+
+// get a list of shelf target options, sort by percent full
+AI.set_empty_self_target = (sm, obj ) => {
+
 };
 
 // set obj.path to the current walk_target. return a promise and resolve or reject with mess and e codes
@@ -2053,6 +2062,9 @@ StateMachine.new_day_check = function() {
   const current_day_index = sm.time.get_week_index();
   if(current_day_index != sm.day_index){
     const day_index = sm.day_index = current_day_index;
+    
+    // reset pop
+    sm.people.reset();
     
     // worker schedule events
     sm.time.events = [];
