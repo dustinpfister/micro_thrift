@@ -1,7 +1,9 @@
 # micro_thrift change log
 
 ## R4 () - 
+
 * (pending) - state of population now a part of the save state
+* (pending) - make sure population, and schedule are deep cloned in from hard coded defaults
 
 ## R3 () - GameTime, Population, Staff state, Budget state
 * added a game update method that can be called in any state beyond just floor state.
@@ -33,18 +35,17 @@
 * make use of sm.schedule clock in and out times
 * fixed a bug with time binding
 * fixed a bug where time would leap forward if tab goes inactive for a while
+* customer spawns are also pushed into game time events along with workers
+* Population.get\_options method
+* customer spawns will vary in terms of who and when at the start of a new day
 
-<!-- customers spawn in by way of GameTime state -->
-* (pending) - have a spawn chance, and spawn rolls per hour for calling sm.spawn for type customer
-* (pending) - have an array of spawn limiting values for each game hour of a game day
-* (pending) - have a count of items a person will buy and then leave
-
-<!-- hire and fire in staff state -->
-* (pending) - can hire a worker in staff state
+<!-- customers spawn in by way of GameTime events -->
+* (pending) - call pop.reset at the start of a new day
 
 <!-- edit schedule -->
-* (pending) - can set up a schedule for a worker in staff state
-* (pending) - schedule is now a part of a game save
+* (pending) - can view the state of the schedule in staff state
+* (pending) - can disable days completely for a worker in staff state
+* (pending) - can set clock in and out times for each worker
 
 <!-- workers cost money -->
 * (pending) - workers will now cost money over time

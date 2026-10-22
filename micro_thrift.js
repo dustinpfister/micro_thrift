@@ -41,13 +41,15 @@ const conf = {
   R: '3A'
 };
 conf.POPULATION = [
-  { id:0, name: 'cady',   type: 'worker' },
-  { id:1, name: 'dustin', type: 'worker' },
-  { id:2, name: 'emme',   type: 'customer' },
-  { id:3, name: 'jean',   type: 'worker' },
-  { id:4, name: 'jessy',  type: 'worker' },
-  { id:5, name: 'rose',   type: 'customer' },
-  { id:6, name: 'siera',  type: 'customer' }
+  { id:0, name: 'cady',    type: 'worker' },
+  { id:1, name: 'dustin',  type: 'worker' },
+  { id:2, name: 'jean',    type: 'worker' },
+  { id:3, name: 'jessy',   type: 'worker' },
+  { id:4, name: 'emme',    type: 'customer' },
+  { id:5, name: 'rose',    type: 'customer' },
+  { id:6, name: 'siera',   type: 'customer' },
+  { id:7, name: 'katie',   type: 'customer' },
+  { id:8, name: 'vanessa', type: 'customer' }
 ];
 conf.LOOP_MS_DELAY = 33; // number of ms to delay each frame in main app loop
 conf.LOOP_MS_AWAY = 1000; // number of ms that will count as the player being away
@@ -78,7 +80,7 @@ conf.SAVE_DEFAULT = {
       }
     },
     {
-      pop_id: 3,
+      pop_id: 2,
       days: {
         0 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
         1 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
@@ -90,7 +92,7 @@ conf.SAVE_DEFAULT = {
       }
     },
     {
-      pop_id: 4,
+      pop_id: 3,
       days: {
         0 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
         1 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
@@ -116,7 +118,7 @@ conf.SAVE_DEFAULT = {
 };
 conf.MAX_OBJECTS = {  // max number of display objects used for sm.people
   worker: 4,
-  customer: 3
+  customer: 5
 };
 conf.MAX_SHELF_ITEMS = 10;
 conf.MAX_OBJECTS.total = conf.MAX_OBJECTS.worker + conf.MAX_OBJECTS.customer;
@@ -483,6 +485,12 @@ class Population extends ObjPool {
       }
       i_key += 1;
     }
+  }
+  
+  get_options (type='customer') {
+    return this.population.filter( (rec) => {
+      return rec.type === type && !rec.active;
+    });
   }
 
   get_pop_rec (opt={}) {
@@ -1522,21 +1530,25 @@ AI.worker = function(sm, obj){
   8.3) customer AI
 ********** *********/
 AI.customer = function(sm, obj){
+
+
   const map = sm.map;
   const target = obj.data.target;
-  if(!target){
-    AI.set_rnd_target(sm, obj, [3,4,5]);
-  }
 
-  if(target){
-    AI.set_path_to_target(sm, obj)
-    .then(()=>{
-      const t = obj.data.walk_target;
-      const pos1 = map.px_to_pos(obj.x, obj.y);
-      const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
-      if(d === 0){
+  if(obj.data.rec.active){
+    AI.set_rnd_target(sm, obj, [3,4,5]);
+    if(obj.data.target){
+      AI.set_path_to_target(sm, obj)
+      .then( ()=>{
+        const t = obj.data.walk_target;
+        const pos1 = map.px_to_pos(obj.x, obj.y);
+        if(t === null || pos1 === null){
+           return Promise.reject({ e: 4, mess: 'null value in code after calling set rnd target'});
+        }
+        const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
         const items = target.data.items;
-        if(items.length > 0){
+        if(d === 0 && items.length > 0){
+          
           const n = target.data.count = target.data.count -= 1;
           // buy the item
           const buying = items.pop();
@@ -1546,35 +1558,61 @@ AI.customer = function(sm, obj){
           target.frame_index = target.type_index - 3;
           sm.money += buying.price;
           sm.money = parseFloat( sm.money.toFixed(2) )
+   
+   
         }
         obj.data.target = null;
         obj.data.walk_target = null;
+      })
+      .catch((res)=>{
+        const e = res.e || '-1'
+        console.log(e, res)
+        if(e === 4){
+          obj.data.target = null;
+        }
+        if(e === '2'){
+          console.log('no border tiles to walk to for target');
+          obj.data.target = null;
+          obj.data.walk_target = null;
+          obj.data.move_frame = 0;
+        }
+        if(e === '3'){
+          const pos = sm.map.px_to_pos(obj.x, obj.y);
+          sm.map.stuck_check(pos.x, pos.y).then((stuck)=>{
+            if(stuck){
+              console.log('stuck!');
+              obj.active = false;  
+              obj.data = {};
+            }
+            if(!stuck){
+              console.log(' not stuck, so just get a new target ');
+              obj.data.target = null;
+              obj.data.walk_target = null;
+            }
+          })
+        }
+      });
+    }
+  }
+  
+  if(!obj.data.rec.active){
+    if(!obj.data.target){
+      AI.set_rnd_target(sm, obj, [6]);
+      const name = obj.data.rec.name;
+      console.log(name + ' is leaving for the day, bye!');
+    }
+    AI.set_path_to_target(sm, obj)
+    .then(()=>{
+      const t = obj.data.walk_target;
+      const pos1 = map.px_to_pos(obj.x, obj.y);
+      const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
+      if(d === 0){
+        obj.active = false;
+        obj.data.rec = null;
       }
     })
-    .catch((res)=>{
-      console.log('e' + res.e);
-      if(res.e === '2'){
-        console.log('no walkabule border tiles for target');
-        obj.data.target = null;
-        obj.data.walk_target = null;
-      }
-      if(res.e === '3'){
-        const pos = sm.map.px_to_pos(obj.x, obj.y);
-        sm.map.stuck_check(pos.x, pos.y).then((stuck)=>{
-          if(stuck){
-            console.log('stuck!');
-            obj.active = false;  
-            obj.data = {};
-          }
-          if(!stuck){
-            console.log(' not stuck, so just get a new target ');
-            obj.data.target = null;
-            obj.data.walk_target = null;
-          }
-        })
-      }
-    });
   }
+
 };
 /********* **********
   9.0) UI - User Interface API
@@ -2001,7 +2039,7 @@ StateMachine.new_day_check = function() {
   const current_day_index = sm.time.get_week_index();
   if(current_day_index != sm.day_index){
     const day_index = sm.day_index = current_day_index;
-    console.log('starting a new day, or resuming one...');
+    
     // worker schedule events
     sm.time.events = [];
     sm.schedule.forEach( (sch) => {
@@ -2019,6 +2057,31 @@ StateMachine.new_day_check = function() {
         });
       }
     });
+    
+    const options = sm.people.get_options('customer');
+    
+    options.forEach( (rec) => {
+      // customers for the day
+      
+      const h_start = 10 + Math.floor( 9 * Math.random() );
+      const h_leave = h_start + Math.floor( (20 - h_start) * Math.random() );
+      const min1 = Math.floor( 15 * Math.random() );
+      const min2 = 20 +  Math.floor( 25 * Math.random() );
+      console.log(rec.name + '  ' + h_start + ':' + min1 + ' , ' + h_leave + ':' + min2)
+      
+      sm.time.push_event({
+        start_hours: [h_start, min1, 0],
+        end_hours: [h_leave, min2, 0],
+        idle: () => { 
+          sm.leave({pop_id: rec.id, spawn_index: 0});
+        },
+        update: () => { 
+          sm.spawn({pop_id: rec.id, spawn_index: 0});
+        }
+      });
+    
+    });
+    
   }
   
 };
@@ -2027,11 +2090,6 @@ StateMachine.game_update = function(sm, t) {
   
   sm.new_day_check()
   
-  //sm.spawn({type: 'customer', spawn_index: 0});
-  //sm.spawn({type: 'worker', spawn_index: 0});
-
-  
-
   sm.people.update(ctx, t, function(obj){
     const d = obj.data;
     d.path = d.path || [];
@@ -2423,8 +2481,6 @@ StateMachine.states.floor = {
 
     console.log('game speed: ' + sm.time.game_speed);
     console.log('move fps  : ' + sm.move_fps);
-
-    console.log(sm.schedule);
 
     data.bg = new UI.ButtonGrid({
       x: sm.map.sx + conf.tile_size * sm.map.width + 5,
