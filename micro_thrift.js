@@ -1448,16 +1448,11 @@ AI.worker = function(sm, obj){
     if(obj.data.target){
       AI.set_path_to_target(sm, obj)
       .then(()=>{
-      
-          
-      
         const t = obj.data.walk_target;
         const pos1 = map.px_to_pos(obj.x, obj.y);
-        
         if(t === null || pos1 === null){
            return Promise.reject({ e: 4, mess: 'null value in code after calling set rnd target'});
         }
-        
         const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
         if(d === 0){
           const target = obj.data.target;
@@ -1474,17 +1469,13 @@ AI.worker = function(sm, obj){
         }
       })
       .catch((res)=>{
-      
         const e = res.e || '-1'
-      
         console.log(e, res.mess)
-      
         if(e === 4){
           obj.data.target = null;
         }
-      
         if(e === '2'){
-          console.log('no walkabule border tiles for target');
+          console.log('no border tiles to walk to for target');
           obj.data.target = null;
           obj.data.walk_target = null;
           obj.data.move_frame = 0;
@@ -1509,29 +1500,21 @@ AI.worker = function(sm, obj){
   }
   
   if(!obj.data.rec.active){
-  
-    //console.log('non active pop member');
-    //console.log(obj.data.target);
-  
     if(!obj.data.target){
       AI.set_rnd_target(sm, obj, [6]);
-      console.log('new target set for non active pop member!');
-      //console.log(obj.data.target);
+      const name = obj.data.rec.name;
+      console.log(name + ' is leaving for the day, bye!');
     }
-  
     AI.set_path_to_target(sm, obj)
     .then(()=>{
-    
       const t = obj.data.walk_target;
       const pos1 = map.px_to_pos(obj.x, obj.y);
-        
       const d = utils.distance(t.x, t.y, pos1.x, pos1.y);
       if(d === 0){
         obj.active = false;
         obj.data.rec = null;
       }
     })
-    
   }
   
 };
@@ -1830,6 +1813,7 @@ StateMachine.load_save = function (save_obj = conf.SAVE_DEFAULT ) {
      date_str: save_obj.date_str || conf.GT_DEFAULTS.date_str
      //date_str: '2000-01-01T00:00:00'
   }));
+  //sm.today = sm.time.get_week_index();
   sm.money = save_obj.money;
   
   sm.schedule = save_obj.schedule || conf.SAVE_DEFAULT.schedule;
@@ -1931,7 +1915,6 @@ StateMachine.leave = function ( opt = {} ) {
     rec.obj.data.walk_target = null;
     rec.obj.data.pos_next = null;
     rec.obj.data.move_frame = 0;
-    console.log('leave')
   }
 };
 
@@ -2012,43 +1995,42 @@ StateMachine.game_render = function(sm, ctx, canvas) {
 
 };
 
-StateMachine.game_update = (sm, t) => {
-  
-  
-  
-  sm.spawn({type: 'customer', spawn_index: 0});
-  //sm.spawn({type: 'worker', spawn_index: 0});
 
-  // worker schedule events
-  sm.time.events = [];
-  
-  const day_index = sm.time.get_week_index();
-  
-  sm.schedule.forEach( (sch) => {
-   const today = sch.days[day_index];
-   if(today){
-     
-     sm.time.push_event({
-       start_hours: today.clock_in,
-       end_hours: today.clock_out,
-       idle: () => { 
-         sm.leave({pop_id: sch.pop_id, spawn_index: 0});
-       },
-       update: () => { 
-         sm.spawn({pop_id: sch.pop_id, spawn_index: 0});
-       }
+StateMachine.new_day_check = function() {
+  const sm = this;
+  const current_day_index = sm.time.get_week_index();
+  if(current_day_index != sm.day_index){
+    const day_index = sm.day_index = current_day_index;
+    console.log('starting a new day, or resuming one...');
+    // worker schedule events
+    sm.time.events = [];
+    sm.schedule.forEach( (sch) => {
+      const today = sch.days[day_index];
+      if(today){
+        sm.time.push_event({
+          start_hours: today.clock_in,
+          end_hours: today.clock_out,
+          idle: () => { 
+            sm.leave({pop_id: sch.pop_id, spawn_index: 0});
+          },
+          update: () => { 
+            sm.spawn({pop_id: sch.pop_id, spawn_index: 0});
+          }
+        });
+      }
     });
   }
   
-  })
-  // can spawn by a given pop_id also
-  
-  
+};
 
+StateMachine.game_update = function(sm, t) {
+  
+  sm.new_day_check()
+  
+  //sm.spawn({type: 'customer', spawn_index: 0});
+  //sm.spawn({type: 'worker', spawn_index: 0});
 
-  //const min_per_day = 1 / 60 * 90;
-  //sm.time.set_game_speed( min_per_day );
-  //sm.move_fps = 1 + 29 * Math.floor( sm.time.game_speed * 0.01  );
+  
 
   sm.people.update(ctx, t, function(obj){
     const d = obj.data;
@@ -2066,8 +2048,7 @@ StateMachine.game_update = (sm, t) => {
     if(obj.active && d.pause_frame){
       d.pause_frame -= sm.move_fps * (t / 1000);
       d.pause_frame = d.pause_frame < 0 ? 0 : d.pause_frame;
-    }
-    
+    }    
   });
   
   // update sm.saves.auto
@@ -2075,6 +2056,7 @@ StateMachine.game_update = (sm, t) => {
   const saves_str = JSON.stringify( sm.saves );
   localStorage.setItem('micro_store_saves', saves_str);
   
+  // update game time by the given t value
   sm.time.update(t);
   sm.time.bind_to_hours();
   
@@ -2641,21 +2623,26 @@ canvas.addEventListener('click', function(e)  {
 document.body.appendChild(canvas);
 
 let lt = new Date();
+// what to do when the player is away for a while
+const away = (t) => {
+  console.log('player was away for ' + t + ' ms');
+};
+// main app loop
 const loop = () => {
   const now = new Date();
   const t = now - lt;
   requestAnimationFrame(loop);
   if(t >= conf.LOOP_MS_DELAY){
-    let dt = t;
     if(t >= conf.LOOP_MS_AWAY){
-      console.log('The player must have been away for a while.');
-      console.log('t=' + t);
-      console.log('setting delta time to zero...');
-      dt = 0;
+      away(t);
     }
+    if(t < conf.LOOP_MS_AWAY){
+      StateMachine.update(t);
+      StateMachine.render(ctx, canvas);
+    }
+
     lt = now;
-    StateMachine.update(dt);
-    StateMachine.render(ctx, canvas);
+
   }
 };
 
