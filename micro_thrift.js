@@ -1410,8 +1410,29 @@ AI.set_rnd_target = (sm, obj, target_types = [3,4,5] ) => {
 };
 
 // get a list of shelf target options, sort by percent full
-AI.set_empty_self_target = (sm, obj ) => {
+AI.set_shelf_target = (sm, obj, opt={} ) => {
+  opt = Object.assign({}, { sort_empty: true }, opt);
 
+  const options = sm.map.get_tiles_by_types( [3, 4, 5] );
+  
+  options.sort((a, b)=>{
+    const n1 = a.data.items.length;
+    const n2 = b.data.items.length; 
+    if( n1 > n2){
+      return opt.sort_empty ? 1: -1;
+    }
+    if( n1 < n2){
+      return opt.sort_empty ? -1: 1;
+    }
+    return 0;
+  });
+  
+  if(options.length > 0){
+    return obj.data.target = options[0];
+  }
+  
+  return obj.data.target = null;
+  
 };
 
 // set obj.path to the current walk_target. return a promise and resolve or reject with mess and e codes
@@ -1462,7 +1483,8 @@ AI.worker = function(sm, obj){
 
   if(obj.data.rec.active){
     if(!obj.data.target){
-      AI.set_rnd_target(sm, obj, [3,4,5]);
+      //AI.set_rnd_target(sm, obj, [3,4,5]);
+       AI.set_shelf_target(sm, obj, {sort_empty: true } );
     }
     if(obj.data.target){
       AI.set_path_to_target(sm, obj)
@@ -2539,6 +2561,7 @@ StateMachine.states.floor = {
     });
   
     StateMachine.game_state_switcher.init(sm);
+  
   
  
   },

@@ -39,9 +39,9 @@
 * Population.get\_options method
 * customer spawns will vary in terms of who and when at the start of a new day
 * fixed a bug with customers not buying items
-
-<!-- customers spawn in by way of GameTime events -->
-* (pending) - call pop.reset at the start of a new day
+* call pop.reset at the start of a new day
+* added a WMap.get\_tiles\_by\_type method
+* AI.set-shelf-target for smarter shelf targeting
 
 <!-- edit schedule -->
 * (pending) - can view the state of the schedule in staff state
