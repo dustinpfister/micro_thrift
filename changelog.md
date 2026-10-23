@@ -42,9 +42,10 @@
 * call pop.reset at the start of a new day
 * added a WMap.get\_tiles\_by\_type method
 * AI.set-shelf-target for smarter shelf targeting
+* can view the state of the schedule in staff state
 
 <!-- edit schedule -->
-* (pending) - can view the state of the schedule in staff state
+
 * (pending) - can disable days completely for a worker in staff state
 * (pending) - can set clock in and out times for each worker
 

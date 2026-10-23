@@ -63,7 +63,7 @@ conf.SAVE_DEFAULT = {
     {
       pop_id: 0,
       days: {
-        0 : { clock_in: [ 11, 0,0], clock_out: [18, 0,0] },
+        //0 : { clock_in: [ 11, 0,0], clock_out: [18, 0,0] },
         1 : { clock_in: [  9,30,0], clock_out: [18, 0,0] },
         2 : { clock_in: [  9,30,0], clock_out: [18, 0,0] },
         3 : { clock_in: [  9,30,0], clock_out: [18, 0,0] }
@@ -82,7 +82,7 @@ conf.SAVE_DEFAULT = {
     {
       pop_id: 2,
       days: {
-        0 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
+        //0 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
         1 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
         2 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
         3 : { clock_in: [12, 0,0], clock_out: [15, 0,0] },
@@ -94,13 +94,13 @@ conf.SAVE_DEFAULT = {
     {
       pop_id: 3,
       days: {
-        0 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
-        1 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
-        2 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
-        3 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
-        4 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
-        5 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
-        6 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] }
+        0 : { clock_in: [ 10, 0,0], clock_out: [18, 0,0] },
+        1 : { clock_in: [ 9, 0,0], clock_out: [18, 0,0] },
+        2 : { clock_in: [ 9, 0,0], clock_out: [18, 0,0] },
+        3 : { clock_in: [ 9, 0,0], clock_out: [18, 0,0] },
+        4 : { clock_in: [ 9, 0,0], clock_out: [18, 0,0] },
+        //5 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] },
+        //6 : { clock_in: [ 9, 0,0], clock_out: [20, 0,0] }
       }
     }
   ],
@@ -491,6 +491,20 @@ class Population extends ObjPool {
     return this.population.filter( (rec) => {
       return rec.type === type && !rec.active;
     });
+  }
+  
+  get_by_pop_id (pop_id=0) {
+     const options = this.objects.filter((obj)=>{
+        const rec = obj.data.rec;
+        if(rec){
+          return rec.pop_id = pop_id;
+        }
+        return false;
+     });
+     if(options.length > 0){
+       return options[0];
+     }
+     return null;
   }
 
   get_pop_rec (opt={}) {
@@ -2615,6 +2629,25 @@ StateMachine.states.floor = {
 /********* **********
   10.5) staff State
 ********** *********/
+const render_sch_day_button = (ctx, sm, schedule, b ) => {
+  const day = schedule.days[b.gx];
+  ctx.fillStyle = day ? 'white' : '#2a2a2a';
+  const x1 = b.x;
+  const y = b.y;
+  ctx.fillRect( x1, y, b.w, b.h );
+  if(day){
+    const per_in = sm.time.get_per_from_hours.apply(sm.time, day.clock_in);
+    const per_out = sm.time.get_per_from_hours.apply(sm.time, day.clock_out);
+    const x2 = x1 + b.w * per_in;
+    const w2 = b.w * ( per_out - per_in );
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(x2, y, w2, b.h);
+  }
+};
+
+
+
+
 StateMachine.states.staff = {
 
   data: {
@@ -2623,9 +2656,64 @@ StateMachine.states.staff = {
 
   pointer : function(sm, x, y, e) {
     StateMachine.game_state_switcher.pointer(sm, x, y, e);
+    sm.bg_schedule.click_check(x, y);
   },
   init: function(sm) {
     const data = sm.states.staff.data;
+    
+      sm.bg_schedule = new UI.ButtonGrid({
+        x: 10, y: 50,
+        bw: 7, bh: conf.MAX_OBJECTS.worker,
+        w: 64, h: 64,
+        init: function(button){},
+        render_over: function(ctx, bg, b){
+          const i_w = b.gy;
+          const schedule = sm.schedule[i_w];
+          const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
+          
+          render_sch_day_button(ctx, sm, schedule, b );
+          ctx.strokeStyle = 'black';
+          ctx.strokeRect(b.x, b.y, b.w, b.h);
+
+          if(b.active){
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+          }
+          
+          ctx.fillStyle = 'white';
+          ctx.textBaseline = 'top';
+          ctx.font = '10px monospace';
+          if(b.gx === 6){
+            
+            
+            const x = 20 + 64 * 7;
+            const y = 50 + 0 + 64 * i_w;
+            ctx.fillText(rec.name, x, y)
+            if(rec.active){
+              ctx.fillText('active now', x, y + 16)
+            }
+          }
+          
+        },
+
+        on_click: function(x, y){
+          const button = this.active_button;
+          if(button){
+          
+            const i_w = button.gy;
+            const schedule = sm.schedule[i_w];
+            const day = schedule.days[button.gx];
+            const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
+            
+            console.log(schedule, day, rec, '')
+            
+          }
+        }
+      });
+
+    
+    
+    console.log(sm.schedule)
     
     StateMachine.game_state_switcher.init(sm);
   },
@@ -2641,6 +2729,9 @@ StateMachine.states.staff = {
     ctx.textBaseline = 'top';
     ctx.font = '10px monospace';
     
+    sm.bg_schedule.render(ctx)
+    
+    /*
     const workers = sm.people.objects.filter((obj)=>{
        return obj.data.type === 'worker';
     });
@@ -2658,6 +2749,7 @@ StateMachine.states.staff = {
        ctx.fillText(worker_status, 20, 50 + 15 * iw);
        iw += 1;
     }
+    */
     
   }
 };
