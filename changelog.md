@@ -45,9 +45,10 @@
 * can view the state of the schedule in staff state
 
 <!-- edit schedule -->
-
-* (pending) - can disable days completely for a worker in staff state
-* (pending) - can set clock in and out times for each worker
+* (pending) - shift menu has a slider for setting start time at 15 min steps
+* (pending) - shift menu has a slider for setting hours after start time
+* (pending) - hours will adjust in shift menu when start time is adjusted
+* (pending) - shift menu can be used to disable a day completely for a worker
 
 <!-- workers cost money -->
 * (pending) - workers will now cost money over time

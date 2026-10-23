@@ -1,6 +1,8 @@
 # micro_thrift
 
-Micro thrift aims to be a simulation of a thrift store including customers, workers, and items on a sales floor. As the player you have control over making decisions that effect the layout of the store in the floor state of the game.
+Micro thrift aims to be a simulation of a thrift store including customers, workers, and items on a sales floor. As the player you have control over making decisions that effect the layout of the store, and setting the worker schedule.
+
+
 
 ## Revisions
 
@@ -9,6 +11,10 @@ For the first few revisions \(R0 to R4\) I wanted the focus to be on getting the
 ## R3 - GameTime, Population, Staff state, Budget state
 
 A GameTime system was added to have a way to simulate the flow of one day to another. The rate of time flow can potentially be adjusted to very slow speeds that are actually in line with real time or even slower, or much faster than that when it comes to what is typical of actual game play. For now I have a conf.MINUITES\_PER\_DAY constant to set what the fixed rate of flow should be. Game time effects things like the speed at which people will move around the map.
+
+Population is a super class of the ObjPool class first introduced in R0 that I am now using for the sm.people object pool instance. Sense it is a super class it works great as a drop in replacement from using ObjPool, but now I have a separate collection of objects that represent a wide population of people that show up at the store. This way I have a low fixed number of max objects that can be in the store at any given time, but a much larger over all population of people that an person object can be spawned in as. For now not much is being down with it, however in future revisions this allows for me to have additional specific values for each person.
+
+The Staff state is maybe the most important improvement in this revision as far as game play is concerned. In this state I can view and mutate the schedule of each worker that shows up.
 
 ## R2 - Utils methods, UI api, map mutation
 
