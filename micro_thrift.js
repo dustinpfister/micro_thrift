@@ -72,11 +72,11 @@ conf.SAVE_DEFAULT = {
     {
       pop_id: 1,
       days: {
-        0 : { clock_in: [ 9, 0,0], clock_out: [18, 0,0] },
-        1 : { clock_in: [ 9,30,0], clock_out: [13,30,0] },
-        2 : { clock_in: [ 9,30,0], clock_out: [18, 0,0] },
-        5 : { clock_in: [ 9, 0,0], clock_out: [18,0,0] },
-        6 : { clock_in: [ 11,0,0], clock_out: [20,0,0] }
+        0 : { clock_in: [ 8, 0,0], clock_out: [20, 0,0] },
+        1 : { clock_in: [ 8, 0,0], clock_out: [20, 0,0] },
+        2 : { clock_in: [ 8, 0,0], clock_out: [20, 0,0] },
+        5 : { clock_in: [ 8, 0,0], clock_out: [20, 0,0] },
+        6 : { clock_in: [ 8, 0,0], clock_out: [20, 0,0] }
       }
     },
     {
@@ -2710,10 +2710,6 @@ StateMachine.states.staff = {
           }
         }
       });
-
-    
-    
-    console.log(sm.schedule)
     
     StateMachine.game_state_switcher.init(sm);
   },
@@ -2730,6 +2726,13 @@ StateMachine.states.staff = {
     ctx.font = '10px monospace';
     
     sm.bg_schedule.render(ctx)
+    
+    // render staff menu
+    const button = sm.bg_schedule.active_button;
+    if(button){
+      ctx.fillStyle = 'white';
+      ctx.fillRect(10, 320, 64 * 7, 150);
+    }
     
     /*
     const workers = sm.people.objects.filter((obj)=>{
