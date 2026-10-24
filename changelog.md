@@ -43,9 +43,10 @@
 * added a WMap.get\_tiles\_by\_type method
 * AI.set-shelf-target for smarter shelf targeting
 * can view the state of the schedule in staff state
+* UI.Slider class started to be used in a shift menu
 
 <!-- edit schedule -->
-* (pending) - UI.Slider class added to be used in a shift menu
+
 * (pending) - shift menu has a slider for setting start time at 15 min steps
 * (pending) - shift menu has a slider for setting hours after start time
 * (pending) - hours will adjust in shift menu when start time is adjusted

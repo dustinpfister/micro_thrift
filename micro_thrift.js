@@ -22,7 +22,8 @@ https://github.com/dustinpfister/micro_thrift
 -9.0 UI               - User Interface API
   -9.1 UI.Button      - A Button class used in menus or as a stand alone object
   -9.2 UI.ButtonGrid  - A Grid of Button Objects
-  -9.3 UI.Menu        - A Menu class that is a collection of UI features such as Buttons
+  -9.3 UI.Slider      - A Slider UI element
+  -9.4 UI.Menu        - A Menu class that is a collection of UI features such as Buttons
 -10.0 StateMachine    - The State Machine of the game
  -10.1 boot           - sets up the map, and other aspects of the game state
  -10.2 main_menu      - the main menu / title state
@@ -1832,7 +1833,35 @@ const UI = {};
   UI.ButtonGrid = ButtonGrid;
 }
 /********* **********
-  9.3) UI.Menu
+  9.3) UI.Slider
+********** *********/
+{
+  class Slider {
+    constructor (opt={}) {
+      Object.assign(this, {
+         x:0, y:0, w: 32, h: 32,
+         render_over: null,
+         on_click: function(){}
+      }, opt);
+      this.per = 0.5;
+    }
+    render(ctx){
+      ctx.fillStyle = 'gray';
+      ctx.fillRect(this.x, this.y, this.w, this.h);
+      const bar_w = 20;
+      const x = this.x + this.w * this.per - bar_w / 2;
+      ctx.strokeStyle = 'black';
+      ctx.fillStyle = 'white';
+      ctx.fillRect(x, this.y, bar_w, this.h);
+      ctx.strokeRect(x, this.y, bar_w, this.h);
+      
+    }
+  }
+  UI.Slider = Slider;
+}
+
+/********* **********
+  9.4) UI.Menu
 ********** *********/
 {
   class Menu {
@@ -2656,60 +2685,60 @@ StateMachine.states.staff = {
 
   pointer : function(sm, x, y, e) {
     StateMachine.game_state_switcher.pointer(sm, x, y, e);
+    
     sm.bg_schedule.click_check(x, y);
+    
   },
   init: function(sm) {
     const data = sm.states.staff.data;
     
-      sm.bg_schedule = new UI.ButtonGrid({
-        x: 10, y: 50,
-        bw: 7, bh: conf.MAX_OBJECTS.worker,
-        w: 64, h: 64,
-        init: function(button){},
-        render_over: function(ctx, bg, b){
-          const i_w = b.gy;
-          const schedule = sm.schedule[i_w];
-          const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
-          
-          render_sch_day_button(ctx, sm, schedule, b );
-          ctx.strokeStyle = 'black';
-          ctx.strokeRect(b.x, b.y, b.w, b.h);
-
-          if(b.active){
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-            ctx.fillRect(b.x, b.y, b.w, b.h);
-          }
-          
-          ctx.fillStyle = 'white';
-          ctx.textBaseline = 'top';
-          ctx.font = '10px monospace';
-          if(b.gx === 6){
-            
-            
-            const x = 20 + 64 * 7;
-            const y = 50 + 0 + 64 * i_w;
-            ctx.fillText(rec.name, x, y)
-            if(rec.active){
-              ctx.fillText('active now', x, y + 16)
-            }
-          }
-          
-        },
-
-        on_click: function(x, y){
-          const button = this.active_button;
-          if(button){
-          
-            const i_w = button.gy;
-            const schedule = sm.schedule[i_w];
-            const day = schedule.days[button.gx];
-            const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
-            
-            console.log(schedule, day, rec, '')
-            
+    //shift menu: x 10, y 320, w 64 * 7, h 150
+    sm.ui_shift_start = new UI.Slider({
+      x: 20, y: 330, w: 256, h: 50,
+      on_click: function(x, y, slider){
+      
+      }
+    });
+    
+    sm.bg_schedule = new UI.ButtonGrid({
+      x: 10, y: 50,
+      bw: 7, bh: conf.MAX_OBJECTS.worker,
+      w: 64, h: 64,
+      init: function(button){},
+      render_over: function(ctx, bg, b){
+        const i_w = b.gy;
+        const schedule = sm.schedule[i_w];
+        const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
+        render_sch_day_button(ctx, sm, schedule, b );
+        ctx.strokeStyle = 'black';
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
+        if(b.active){
+          ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+          ctx.fillRect(b.x, b.y, b.w, b.h);
+        }
+        ctx.fillStyle = 'white';
+        ctx.textBaseline = 'top';
+        ctx.font = '10px monospace';
+        if(b.gx === 6){     
+          const x = 20 + 64 * 7;
+          const y = 50 + 0 + 64 * i_w;
+          ctx.fillText(rec.name, x, y)
+          if(rec.active){
+            ctx.fillText('active now', x, y + 16)
           }
         }
-      });
+      },
+      on_click: function(x, y){
+        const button = this.active_button;
+        if(button){
+          const i_w = button.gy;
+          const schedule = sm.schedule[i_w];
+          const day = schedule.days[button.gx];
+          const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
+          console.log(schedule, day, rec, '')
+        }
+      }
+    });
     
     StateMachine.game_state_switcher.init(sm);
   },
@@ -2732,6 +2761,7 @@ StateMachine.states.staff = {
     if(button){
       ctx.fillStyle = 'white';
       ctx.fillRect(10, 320, 64 * 7, 150);
+      sm.ui_shift_start.render(ctx);
     }
     
     /*
