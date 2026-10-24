@@ -2686,7 +2686,10 @@ StateMachine.states.staff = {
   pointer : function(sm, x, y, e) {
     StateMachine.game_state_switcher.pointer(sm, x, y, e);
     
-    sm.bg_schedule.click_check(x, y);
+    const bg = sm.bg_schedule;
+    if( utils.bounding_box({x: bg.x, y: bg.y, w: bg.w * bg.bw, h: bg.h * bg.bh}, {x: x, y: y, w:1, h:1}) ){
+      bg.click_check(x, y);
+    }
     
   },
   init: function(sm) {
