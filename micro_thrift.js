@@ -1792,6 +1792,7 @@ const UI = {};
         i += 1;
       }
     }
+    
     set_active  ( button=null ) {
       const len = this.bw * this.bh;
       let i = 0;
@@ -1854,7 +1855,12 @@ const UI = {};
       ctx.fillStyle = 'white';
       ctx.fillRect(x, this.y, bar_w, this.h);
       ctx.strokeRect(x, this.y, bar_w, this.h);
-      
+    }
+    click_check (x=-1, y=-1) {
+      if( utils.bounding_box(this, {x: x, y: y, w:1, h:1}) ){
+        this.per = (x - this.x) / this.w;
+        this.on_click(x, y, this);
+      }
     }
   }
   UI.Slider = Slider;
@@ -2690,6 +2696,9 @@ StateMachine.states.staff = {
     if( utils.bounding_box({x: bg.x, y: bg.y, w: bg.w * bg.bw, h: bg.h * bg.bh}, {x: x, y: y, w:1, h:1}) ){
       bg.click_check(x, y);
     }
+    if(bg.active_button){
+      sm.ui_shift_start.click_check(x, y);
+    }
     
   },
   init: function(sm) {
@@ -2699,7 +2708,7 @@ StateMachine.states.staff = {
     sm.ui_shift_start = new UI.Slider({
       x: 20, y: 330, w: 256, h: 50,
       on_click: function(x, y, slider){
-      
+         console.log('slider clicked!');
       }
     });
     
