@@ -2704,13 +2704,7 @@ StateMachine.states.staff = {
   init: function(sm) {
     const data = sm.states.staff.data;
     
-    //shift menu: x 10, y 320, w 64 * 7, h 150
-    sm.ui_shift_start = new UI.Slider({
-      x: 20, y: 330, w: 256, h: 50,
-      on_click: function(x, y, slider){
-         console.log('slider clicked!');
-      }
-    });
+    
     
     sm.bg_schedule = new UI.ButtonGrid({
       x: 10, y: 50,
@@ -2743,12 +2737,55 @@ StateMachine.states.staff = {
       on_click: function(x, y){
         const button = this.active_button;
         if(button){
-          const i_w = button.gy;
-          const schedule = sm.schedule[i_w];
-          const day = schedule.days[button.gx];
-          const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
-          console.log(schedule, day, rec, '')
+          //const i_w = button.gy;
+          //const schedule = sm.schedule[i_w];
+          //const day = schedule.days[button.gx];
+          //const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
+          //console.log(schedule, day, rec, '')
         }
+      }
+    });
+    
+    //shift menu: x 10, y 320, w 64 * 7, h 150
+
+    sm.ui_shift_start = new UI.Slider({
+
+      x: 20, y: 330, w: 256, h: 50,
+
+      on_click: function(x, y, slider){
+         const per_hour = 4;
+         const hours = 11;
+         const options = per_hour * hours;
+
+         slider.per = Math.round( slider.per * options ) / options;
+ 
+         const index = Math.floor(slider.per * options);
+         const y2 = Math.floor( index / 4 );
+         const x2 = index % 4;
+
+         const start_min = x2 * 15;
+         const start_hour = 8 + y2;
+
+         const button = sm.bg_schedule.active_button;
+         if(button){
+           const i_w = button.gy;
+           const schedule = sm.schedule[i_w];
+           const day = schedule.days[button.gx];
+           const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
+           
+           day.clock_in[0] = start_hour;
+           if(day.clock_out[0] < start_hour){
+             day.clock_out[0] = start_hour + 1;
+           }
+           
+           console.log('');
+           console.log('start_hour: ' + start_hour);
+           console.log('start_min: ' + start_min);
+           console.log('day: ', day);
+           console.log('rec: ', rec)
+           console.log('');
+         
+         }
       }
     });
     

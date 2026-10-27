@@ -44,9 +44,10 @@
 * AI.set-shelf-target for smarter shelf targeting
 * can view the state of the schedule in staff state
 * UI.Slider class started to be used in a shift menu
+* shift menu has a slider for setting start time at 15 min steps
 
 <!-- edit schedule -->
-* (pending) - shift menu has a slider for setting start time at 15 min steps
+
 * (pending) - shift menu has a slider for setting hours after start time
 * (pending) - hours will adjust in shift menu when start time is adjusted
 * (pending) - shift menu can be used to disable a day completely for a worker
