@@ -1,11 +1,19 @@
 # micro_thrift change log
 
-## R4 () - 
+## R4 () - Budget state
 
+<!-- workers cost money -->
+* (pending) - workers will now cost money over time
+* (pending) - total worker costs will be shown in budget state
+* (pending) - changes to the map will now cost money and will show in budget
+* (pending) - total sales will show in budget
+
+<!-- misc -->
+* (pending) - pointer move support for state machine
 * (pending) - state of population now a part of the save state
 * (pending) - make sure population, and schedule are deep cloned in from hard coded defaults
 
-## R3 () - GameTime, Population, Staff state, Budget state
+## R3 () - GameTime, Population, Staff state
 * added a game update method that can be called in any state beyond just floor state.
 * start a GameTime system that will translate real time to game time
 * create a new instance of GameTime as sm.time when a new game is loaded
@@ -47,16 +55,10 @@
 * shift menu has a slider for setting start time at 15 min steps
 
 <!-- edit schedule -->
-
 * (pending) - shift menu has a slider for setting hours after start time
-* (pending) - hours will adjust in shift menu when start time is adjusted
+* (pending) - shift menu sliders set to proper states when a day is clicked
+* (pending) - display clock in and out times in shift menu
 * (pending) - shift menu can be used to disable a day completely for a worker
-
-<!-- workers cost money -->
-* (pending) - workers will now cost money over time
-* (pending) - total worker costs will be shown in budget state
-* (pending) - changes to the map will now cost money and will show in budget
-* (pending) - total sales will show in budget
 
 <!-- misc -->
 * (pending) - make the options state one of the tab menu states
