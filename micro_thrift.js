@@ -2664,177 +2664,139 @@ StateMachine.states.floor = {
 /********* **********
   10.5) staff State
 ********** *********/
-const render_sch_day_button = (ctx, sm, schedule, b ) => {
-  const day = schedule.days[b.gx];
-  ctx.fillStyle = day ? 'white' : '#2a2a2a';
-  const x1 = b.x;
-  const y = b.y;
-  ctx.fillRect( x1, y, b.w, b.h );
-  if(day){
-    const per_in = sm.time.get_per_from_hours.apply(sm.time, day.clock_in);
-    const per_out = sm.time.get_per_from_hours.apply(sm.time, day.clock_out);
-    const x2 = x1 + b.w * per_in;
-    const w2 = b.w * ( per_out - per_in );
-    ctx.fillStyle = 'blue';
-    ctx.fillRect(x2, y, w2, b.h);
-  }
-};
+{
 
-
-
-
-StateMachine.states.staff = {
-
-  data: {
-    
-  },
-
-  pointer : function(sm, x, y, e) {
-    StateMachine.game_state_switcher.pointer(sm, x, y, e);
-    
-    const bg = sm.bg_schedule;
-    if( utils.bounding_box({x: bg.x, y: bg.y, w: bg.w * bg.bw, h: bg.h * bg.bh}, {x: x, y: y, w:1, h:1}) ){
-      bg.click_check(x, y);
+  // render the final state of a schedule day button 
+  const render_sch_day_button = (ctx, sm, schedule, b ) => {
+    const day = schedule.days[b.gx];
+    ctx.fillStyle = day ? 'white' : '#2a2a2a';
+    const x1 = b.x;
+    const y = b.y;
+    ctx.fillRect( x1, y, b.w, b.h );
+    if(day){
+      const per_in = sm.time.get_per_from_hours.apply(sm.time, day.clock_in);
+      const per_out = sm.time.get_per_from_hours.apply(sm.time, day.clock_out);
+      const x2 = x1 + b.w * per_in;
+      const w2 = b.w * ( per_out - per_in );
+      ctx.fillStyle = 'blue';
+      ctx.fillRect(x2, y, w2, b.h);
     }
-    if(bg.active_button){
-      sm.ui_shift_start.click_check(x, y);
-    }
-    
-  },
-  init: function(sm) {
-    const data = sm.states.staff.data;
-    
-    
-    
-    sm.bg_schedule = new UI.ButtonGrid({
-      x: 10, y: 50,
-      bw: 7, bh: conf.MAX_OBJECTS.worker,
-      w: 64, h: 64,
-      init: function(button){},
-      render_over: function(ctx, bg, b){
-        const i_w = b.gy;
-        const schedule = sm.schedule[i_w];
-        const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
-        render_sch_day_button(ctx, sm, schedule, b );
-        ctx.strokeStyle = 'black';
-        ctx.strokeRect(b.x, b.y, b.w, b.h);
-        if(b.active){
-          ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-          ctx.fillRect(b.x, b.y, b.w, b.h);
-        }
-        ctx.fillStyle = 'white';
-        ctx.textBaseline = 'top';
-        ctx.font = '10px monospace';
-        if(b.gx === 6){     
-          const x = 20 + 64 * 7;
-          const y = 50 + 0 + 64 * i_w;
-          ctx.fillText(rec.name, x, y)
-          if(rec.active){
-            ctx.fillText('active now', x, y + 16)
-          }
-        }
-      },
-      on_click: function(x, y){
-        const button = this.active_button;
-        if(button){
-          //const i_w = button.gy;
-          //const schedule = sm.schedule[i_w];
-          //const day = schedule.days[button.gx];
-          //const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
-          //console.log(schedule, day, rec, '')
-        }
-      }
-    });
-    
-    //shift menu: x 10, y 320, w 64 * 7, h 150
-
-    sm.ui_shift_start = new UI.Slider({
-
-      x: 20, y: 330, w: 256, h: 50,
-
-      on_click: function(x, y, slider){
-         const per_hour = 4;
-         const hours = 11;
-         const options = per_hour * hours;
-
-         slider.per = Math.round( slider.per * options ) / options;
- 
-         const index = Math.floor(slider.per * options);
-         const y2 = Math.floor( index / 4 );
-         const x2 = index % 4;
-
-         const start_min = x2 * 15;
-         const start_hour = 8 + y2;
-
-         const button = sm.bg_schedule.active_button;
-         if(button){
-           const i_w = button.gy;
-           const schedule = sm.schedule[i_w];
-           const day = schedule.days[button.gx];
-           const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
-           
-           day.clock_in[0] = start_hour;
-           if(day.clock_out[0] < start_hour){
-             day.clock_out[0] = start_hour + 1;
-           }
-           
-           console.log('');
-           console.log('start_hour: ' + start_hour);
-           console.log('start_min: ' + start_min);
-           console.log('day: ', day);
-           console.log('rec: ', rec)
-           console.log('');
-         
-         }
-      }
-    });
-    
-    StateMachine.game_state_switcher.init(sm);
-  },
-  update: function(sm, t) {
-    StateMachine.game_update(sm, t);
-  },
-  render: function(sm, ctx, canvas) {
-    StateMachine.game_render(sm, ctx, canvas);
-    StateMachine.game_state_switcher.render(sm, ctx, canvas);
-    
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.font = '10px monospace';
-    
-    sm.bg_schedule.render(ctx)
-    
-    // render staff menu
+  };
+  
+  const get_active_day_data = function(sm){
     const button = sm.bg_schedule.active_button;
     if(button){
-      ctx.fillStyle = 'white';
-      ctx.fillRect(10, 320, 64 * 7, 150);
-      sm.ui_shift_start.render(ctx);
+      const i_w = button.gy;
+      const schedule = sm.schedule[i_w];
+      return{
+        i_w : i_w,
+        schedule : schedule,
+        day : schedule.days[button.gx],
+        rec : sm.people.get_pop_rec({pop_id: schedule.pop_id})
+      };
     }
-    
-    /*
-    const workers = sm.people.objects.filter((obj)=>{
-       return obj.data.type === 'worker';
-    });
-    
-    let iw = 0;
-    const len = workers.length;
-    while(iw < len){
-       const obj = workers[ iw ];
-       const pos = sm.map.px_to_pos(obj.x, obj.y);
-       const rec = obj.data.rec || { name: 'NA', id: 'NA' }
-       const worker_status = 'pop_id: ' + String(rec.id).padStart(2, ' ') +
-         ' active: ' + String(obj.active).padStart(5, ' ') + ' pos: ( ' + 
-         String(pos.x).padStart(3, ' ') + ',' + String(pos.y).padStart(3, ' ') + ')' + 
-         ' name: ' + rec.name;
-       ctx.fillText(worker_status, 20, 50 + 15 * iw);
-       iw += 1;
-    }
-    */
-    
+    return null;
   }
-};
+
+  StateMachine.states.staff = {
+
+    pointer : function(sm, x, y, e) {
+      StateMachine.game_state_switcher.pointer(sm, x, y, e);
+      const bg = sm.bg_schedule;
+      if( utils.bounding_box({x: bg.x, y: bg.y, w: bg.w * bg.bw, h: bg.h * bg.bh}, {x: x, y: y, w:1, h:1}) ){
+        bg.click_check(x, y);
+      }
+      if(bg.active_button){
+        sm.ui_shift_start.click_check(x, y);
+      }
+    },
+    
+    init: function(sm) {
+      const data = sm.states.staff.data;
+      sm.bg_schedule = new UI.ButtonGrid({
+        x: 10, y: 50,
+        bw: 7, bh: conf.MAX_OBJECTS.worker,
+        w: 64, h: 64,
+        init: function(button){},
+        render_over: function(ctx, bg, b){
+          const i_w = b.gy;
+          const schedule = sm.schedule[i_w];
+          const rec = sm.people.get_pop_rec({pop_id: schedule.pop_id});
+          render_sch_day_button(ctx, sm, schedule, b );
+          ctx.strokeStyle = 'black';
+          ctx.strokeRect(b.x, b.y, b.w, b.h);
+          if(b.active){
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+          }
+          ctx.fillStyle = 'white';
+          ctx.textBaseline = 'top';
+          ctx.font = '10px monospace';
+          if(b.gx === 6){     
+            const x = 20 + 64 * 7;
+            const y = 50 + 0 + 64 * i_w;
+            ctx.fillText(rec.name, x, y)
+            if(rec.active){
+              ctx.fillText('active now', x, y + 16)
+            }
+          }
+        },
+        on_click: function(x, y){
+          //const active_day = get_active_day_data(sm);
+          //console.log('active day data:');
+          //console.log(active_day);
+        }
+      });
+      //shift menu: x 10, y 320, w 64 * 7, h 150
+      sm.ui_shift_start = new UI.Slider({
+        x: 20, y: 330, w: 256, h: 50,
+        on_click: function(x, y, slider){
+          const per_hour = 4;
+          const hours = 11;
+          const options = per_hour * hours;
+          slider.per = Math.round( slider.per * options ) / options;
+          const index = Math.floor(slider.per * options);
+          const y2 = Math.floor( index / 4 );
+          const x2 = index % 4;
+          const start_min = x2 * 15;
+          const start_hour = 8 + y2;
+          const active = get_active_day_data(sm);
+          if(active){
+            active.day.clock_in[0] = start_hour;
+            if(active.day.clock_out[0] < start_hour){
+              active.day.clock_out[0] = start_hour + 1;
+            }
+            console.log(start_hour + ':' + start_min);
+          }
+          
+        }
+      });
+      StateMachine.game_state_switcher.init(sm);
+    },
+    
+    update: function(sm, t) {
+      StateMachine.game_update(sm, t);
+    },
+    
+    render: function(sm, ctx, canvas) {
+      StateMachine.game_render(sm, ctx, canvas);
+      StateMachine.game_state_switcher.render(sm, ctx, canvas);
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.font = '10px monospace';
+      sm.bg_schedule.render(ctx)
+      // render staff menu
+      const button = sm.bg_schedule.active_button;
+      if(button){
+        ctx.fillStyle = 'white';
+        ctx.fillRect(10, 320, 64 * 7, 150);
+        sm.ui_shift_start.render(ctx);
+      }  
+    }
+  };
+  
+}
 /********* **********
   10.6) budget State
 ********** *********/
