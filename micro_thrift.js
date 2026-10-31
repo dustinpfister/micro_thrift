@@ -3,40 +3,40 @@ Micro thrift
 c 2026 by Dustin Pfister (GPL 3.0) 
 https://github.com/dustinpfister/micro_thrift
 
--1.0 Conf             - a config object containing constants used throughout the codebase
--2.0 Utils            - general utility functions
--3.0 SImg             - Allows for storing image assets in source
-  -3.1 tile_assets    - SImg assets used to tile the WMap instance
-  -3.2 pool_assets    - SImg assets used to skin ObjPool objects
-  -3.3 button_assets  - Simg assets used to skin buttons
-  -3.4 main title     - Simg assets for title / main menu
--4.0 ObjPool          - An Object pool class used for sprite objects
-  -4.1 Population     - A super class of ObjPool that is used for sm.people
--5.0 Pathfinder       - Path finding based on EasyStar
--6.0 GameTime         - Translates real time to game time, handles time triggered events
--7.0 WMap             - A world Map system
--8.0 AI               - Artificial intelligence of sm.people objects
-  -8.1 main           - main AI script that applies to all objects
-  -8.2 worker         - worker AI script 
-  -8.3 customer       - customer AI script
--9.0 UI               - User Interface API
-  -9.1 UI.Button      - A Button class used in menus or as a stand alone object
-  -9.2 UI.ButtonGrid  - A Grid of Button Objects
-  -9.3 UI.Slider      - A Slider UI element
-  -9.4 UI.Menu        - A Menu class that is a collection of UI features such as Buttons
--10.0 StateMachine    - The State Machine of the game
- -10.1 boot           - sets up the map, and other aspects of the game state
- -10.2 main_menu      - the main menu / title state
- -10.3 save_manager   - the save manager state
- -10.4 floor          - shows the current state of the 'floor' of the thrift store
- -10.5 staff          - options or pause state
- -10.6 budget         - options or pause state
- -10.7 options        - options or pause state
--11.0 App loop        - Main application loop of the game
+-01.0 Conf             - a config object containing constants used throughout the codebase
+-02.0 Utils            - general utility functions
+-03.0 SImg             - Allows for storing image assets in source
+  -03.1 tile_assets    - SImg assets used to tile the WMap instance
+  -03.2 pool_assets    - SImg assets used to skin ObjPool objects
+  -03.3 button_assets  - Simg assets used to skin buttons
+  -03.4 main title     - Simg assets for title / main menu
+-04.0 ObjPool          - An Object pool class used for sprite objects
+  -04.1 Population     - A super class of ObjPool that is used for sm.people
+-05.0 Pathfinder       - Path finding based on EasyStar
+-06.0 GameTime         - Translates real time to game time, handles time triggered events
+-07.0 WMap             - A world Map system
+-08.0 AI               - Artificial intelligence of sm.people objects
+  -08.1 main           - main AI script that applies to all objects
+  -08.2 worker         - worker AI script 
+  -08.3 customer       - customer AI script
+-09.0 UI               - User Interface API
+  -09.1 UI.Button      - A Button class used in menus or as a stand alone object
+  -09.2 UI.ButtonGrid  - A Grid of Button Objects
+  -09.3 UI.Slider      - A Slider UI element
+  -09.4 UI.Menu        - A Menu class that is a collection of UI features such as Buttons
+-10.0 StateMachine     - The State Machine of the game
+ -10.1 boot            - sets up the map, and other aspects of the game state
+ -10.2 main_menu       - the main menu / title state
+ -10.3 save_manager    - the save manager state
+ -10.4 floor           - shows the current state of the 'floor' of the thrift store
+ -10.5 staff           - options or pause state
+ -10.6 budget          - options or pause state
+ -10.7 options         - options or pause state
+-11.0 App loop         - Main application loop of the game
 
 ********** *********/
 /********* **********
-  1.0) Config
+  01.0) Config
 ********** *********/
 const conf = {
   R: '3A'
@@ -141,7 +141,7 @@ conf.GT_DEFAULTS = { // defaults for an instance of the GameTime class
   game_speed: 600
 };
 /********* **********
-  2.0) Utils
+  02.0) Utils
 ********** *********/
 const utils = {};
 utils.bounding_box = function(a={}, b={}) {
@@ -159,7 +159,7 @@ utils.lerp = function(start=0, end=1, amt=0.5) {
   return start + ( end - start ) * amt;
 };
 /********* **********
-  3.0) SImg Class + helper functions
+  03.0) SImg Class + helper functions
 ********** *********/
 const create_canvas_sheet = (img) => {
     const canvas = document.createElement('canvas');
@@ -199,7 +199,7 @@ class SImg {
 };
 
 /********* **********
-  3.1) tile_assets
+  03.1) tile_assets
 ********** *********/
 const simg_tiles_null = new SImg( {
   width: 64, frame_width: 16,
@@ -248,7 +248,7 @@ const simg_tiles_stock = new SImg( {
   ] } );
 
 /********* **********
-  3.2) pool_assets
+  03.2) pool_assets
 ********** *********/
 const simg_pool_customer = new SImg( {
   width: 16, frame_width: 16, px_size: 16, pallette: conf.palette_1,
@@ -292,7 +292,7 @@ const simg_pool_worker = new SImg( {
     7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
   ] } );
 /********* **********
-  3.3) button_assets
+  03.3) button_assets
 ********** *********/
 const simg_buttons = new SImg( {
   width: 16, frame_width: 16, px_size: 16, pallette: conf.palette_1,
@@ -328,7 +328,7 @@ const simg_buttons_options = new SImg( {
     3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
   ]});
 /********* **********
-  3.4) main title
+  03.4) main title
 ********** *********/
 const simg_main_title = new SImg( {
   width: 40, frame_width: 40, px_size: 16, pallette: conf.palette_1,
@@ -352,7 +352,7 @@ const simg_main_title = new SImg( {
   ]});
 
 /********* **********
-  4.0) ObjPool CLASS
+  04.0) ObjPool CLASS
 ********** *********/
 class ObjPool {
   //constructor ( count = 10, simg = simg_tiles_null ) {
@@ -449,7 +449,7 @@ class ObjPool {
 
 }
 /********* **********
-  4.1) Population
+  04.1) Population
 ********** *********/
 class Population extends ObjPool {
 
@@ -561,7 +561,7 @@ class Population extends ObjPool {
   }
 }
 /********* **********
-  5.0) PathFinder
+  05.0) PathFinder
 ********** *********/
 // This is based on what I found here
 // PathFinder License: MIT.
@@ -1048,7 +1048,7 @@ class PathFinder {
 }
 
 /********* **********
-  6.0) GameTime
+  06.0) GameTime
 ********** *********/
 class GameTime {
 
@@ -1146,7 +1146,7 @@ class GameTime {
 };
 
 /********* **********
-  7.0) WMap world map system
+  07.0) WMap world map system
 ********** *********/
 
 class WMap {
@@ -1371,7 +1371,7 @@ class WMap {
 }
 
 /********* **********
-  8.0) AI
+  08.0) AI
 ********** *********/
 const AI = {}
 // move if there is path data
@@ -1482,7 +1482,7 @@ AI.set_path_to_target = (sm, obj) => {
 };
 
 /********* **********
-  8.1) Main AI
+  08.1) Main AI
 ********** *********/
 AI.main = function( sm, obj ){
   // always move if there is path data
@@ -1491,7 +1491,7 @@ AI.main = function( sm, obj ){
   AI[obj.data.type](sm, obj);
 };
 /********* **********
-  8.2) Worker AI
+  08.2) Worker AI
 ********** *********/
 AI.worker = function(sm, obj){
   const map = sm.map;
@@ -1575,7 +1575,7 @@ AI.worker = function(sm, obj){
   
 };
 /********* **********
-  8.3) customer AI
+  08.3) customer AI
 ********** *********/
 AI.customer = function(sm, obj){
 
@@ -1675,11 +1675,11 @@ AI.customer = function(sm, obj){
 
 };
 /********* **********
-  9.0) UI - User Interface API
+  09.0) UI - User Interface API
 ********** *********/
 const UI = {};
 /********* **********
-  9.1) UI.Button
+  09.1) UI.Button
 ********** *********/
 {
   class Button {
@@ -1713,7 +1713,7 @@ const UI = {};
   UI.Button = Button;
 };
 /********* **********
-  9.2) UI.ButtonGrid
+  09.2) UI.ButtonGrid
 ********** *********/
 {
   class ButtonGrid {
@@ -1834,7 +1834,7 @@ const UI = {};
   UI.ButtonGrid = ButtonGrid;
 }
 /********* **********
-  9.3) UI.Slider
+  09.3) UI.Slider
 ********** *********/
 {
   class Slider {
@@ -1842,6 +1842,7 @@ const UI = {};
       Object.assign(this, {
          x:0, y:0, w: 32, h: 32,
          render_over: null,
+         data: {},
          on_click: function(){}
       }, opt);
       this.per = 0.5;
@@ -1867,7 +1868,7 @@ const UI = {};
 }
 
 /********* **********
-  9.4) UI.Menu
+  09.4) UI.Menu
 ********** *********/
 {
   class Menu {
@@ -2683,6 +2684,7 @@ StateMachine.states.floor = {
     }
   };
   
+  // get data such as worker schedule, hours a ref to the worker record, ect
   const get_active_day_data = function(sm){
     const button = sm.bg_schedule.active_button;
     if(button){
@@ -2698,6 +2700,40 @@ StateMachine.states.floor = {
     return null;
   }
 
+  // set shift data from schedule
+  const set_shift_data_from_schedule = ( sm ) => {
+    const active = get_active_day_data(sm);
+    // setting per for the sliders
+    if(active){
+      const per = ( active.day.clock_in[0] - 8 ) / (20 - 8);
+      sm.ui_shift_start.per = per;
+    }  
+  };
+
+  // set shift data from current state of sliders
+  const set_shift_data_from_sliders = ( sm ) => {
+    const active = get_active_day_data(sm);
+    // setting per for the shift start slider here
+    if(active){
+      // update start time slider first
+      let slider = sm.ui_shift_start;
+      const per_hour = 4;
+      const hours = 11;
+      const options = per_hour * hours;
+      slider.per = Math.round( slider.per * options ) / options;
+      const index = Math.floor(slider.per * options);
+      const y2 = Math.floor( index / 4 );
+      const x2 = index % 4;
+      const start_min = x2 * 15;
+      const start_hour = 8 + y2;
+      active.day.clock_in[0] = start_hour;
+      if(active.day.clock_out[0] < start_hour){
+        active.day.clock_out[0] = start_hour + 1;
+      }
+      console.log(start_hour + ':' + start_min);  
+    }  
+  };
+
   StateMachine.states.staff = {
 
     pointer : function(sm, x, y, e) {
@@ -2708,6 +2744,7 @@ StateMachine.states.floor = {
       }
       if(bg.active_button){
         sm.ui_shift_start.click_check(x, y);
+        sm.ui_shift_hours.click_check(x, y);
       }
     },
     
@@ -2742,33 +2779,20 @@ StateMachine.states.floor = {
           }
         },
         on_click: function(x, y){
-          //const active_day = get_active_day_data(sm);
-          //console.log('active day data:');
-          //console.log(active_day);
+          set_shift_data_from_schedule(sm);
         }
       });
       //shift menu: x 10, y 320, w 64 * 7, h 150
       sm.ui_shift_start = new UI.Slider({
         x: 20, y: 330, w: 256, h: 50,
         on_click: function(x, y, slider){
-          const per_hour = 4;
-          const hours = 11;
-          const options = per_hour * hours;
-          slider.per = Math.round( slider.per * options ) / options;
-          const index = Math.floor(slider.per * options);
-          const y2 = Math.floor( index / 4 );
-          const x2 = index % 4;
-          const start_min = x2 * 15;
-          const start_hour = 8 + y2;
-          const active = get_active_day_data(sm);
-          if(active){
-            active.day.clock_in[0] = start_hour;
-            if(active.day.clock_out[0] < start_hour){
-              active.day.clock_out[0] = start_hour + 1;
-            }
-            console.log(start_hour + ':' + start_min);
-          }
-          
+          set_shift_data_from_sliders(sm);
+        }
+      });
+      sm.ui_shift_hours = new UI.Slider({
+        x: 20, y: 400, w: 256, h: 50,
+        on_click: function(x, y, slider){
+          set_shift_data_from_sliders(sm);
         }
       });
       StateMachine.game_state_switcher.init(sm);
@@ -2792,6 +2816,7 @@ StateMachine.states.floor = {
         ctx.fillStyle = 'white';
         ctx.fillRect(10, 320, 64 * 7, 150);
         sm.ui_shift_start.render(ctx);
+        sm.ui_shift_hours.render(ctx);
       }  
     }
   };

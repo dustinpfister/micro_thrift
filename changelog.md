@@ -55,8 +55,8 @@
 * shift menu has a slider for setting start time at 15 min steps
 
 <!-- edit schedule -->
-* (pending) - shift menu has a slider for setting hours after start time
 * (pending) - shift menu sliders set to proper states when a day is clicked
+* (pending) - shift menu has a slider for setting hours after start time
 * (pending) - display clock in and out times in shift menu
 * (pending) - shift menu can be used to disable a day completely for a worker
 
