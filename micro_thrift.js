@@ -2703,10 +2703,36 @@ StateMachine.states.floor = {
   // set shift data from schedule
   const set_shift_data_from_schedule = ( sm ) => {
     const active = get_active_day_data(sm);
+    const clock_in = active.day.clock_in[0];
+    const clock_out = active.day.clock_out[0];
+    const hours = 11, per_hour = 4;
     // setting per for the sliders
     if(active){
-      const per = ( active.day.clock_in[0] - 8 ) / (20 - 8);
-      sm.ui_shift_start.per = per;
+      // start time slider
+      const slider1 = sm.ui_shift_start;
+      
+      slider1.data = {
+        hours: hours, 
+        per_hour: per_hour, 
+        options: per_hour * hours
+      };
+      slider1.per = ( clock_in - 8 ) / ( 19 - 8 );
+      
+      // hours of shift slider
+      const slider2 = sm.ui_shift_hours;
+      const store_in = clock_in - 8;
+      const max_hours = 19 - clock_in;
+      const options = max_hours * per_hour
+      slider2.data = {
+        clock_in: clock_in,
+        store_in: store_in,
+        max_hours: max_hours,
+        options: options
+      };
+      
+      console.log( slider2.data )
+      
+      slider2.per = 0;
     }  
   };
 
@@ -2716,12 +2742,9 @@ StateMachine.states.floor = {
     // setting per for the shift start slider here
     if(active){
       // update start time slider first
-      let slider = sm.ui_shift_start;
-      const per_hour = 4;
-      const hours = 11;
-      const options = per_hour * hours;
-      slider.per = Math.round( slider.per * options ) / options;
-      const index = Math.floor(slider.per * options);
+      let slider1 = sm.ui_shift_start;
+      slider1.per = Math.round( slider1.per * slider1.data.options ) / slider1.data.options;
+      const index = Math.floor(slider1.per * slider1.data.options);
       const y2 = Math.floor( index / 4 );
       const x2 = index % 4;
       const start_min = x2 * 15;
