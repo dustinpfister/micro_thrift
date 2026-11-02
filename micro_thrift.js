@@ -2706,14 +2706,17 @@ StateMachine.states.floor = {
   // set shift data from schedule
   const set_shift_data_from_schedule = ( sm ) => {
     const active = get_active_day_data(sm);
-    const clock_in = active.day.clock_in;
-    const clock_out = active.day.clock_out;
     const hours = 11, per_hour = 4;
+    if(!active){
+      return;
+    }
     // setting per for the sliders
-    if(active){
+    if(active.day){
       // start time slider
       const slider1 = sm.ui_shift_start;
-      
+      const clock_in = active.day.clock_in;
+      const clock_out = active.day.clock_out;
+    
       slider1.data = {
         clock_in: clock_in,
         clock_out: clock_out,
@@ -2823,11 +2826,14 @@ StateMachine.states.floor = {
           const sx = slider.x + slider.w;
           const sy = slider.y;
           const d = slider.data;
-          ctx.fillStyle = 'black';
-          ctx.textBaseline = 'top';
-          ctx.textAlign = 'left';
-          ctx.font = '10px monospace';
-          ctx.fillText('clock_in: ' + d.clock_in[0] + ':' + d.clock_in[1], sx + 20, sy );
+          const active = get_active_day_data(sm);
+          if(active.day){
+            ctx.fillStyle = 'black';
+            ctx.textBaseline = 'top';
+            ctx.textAlign = 'left';
+            ctx.font = '10px monospace';
+            ctx.fillText('clock_in: ' + d.clock_in[0] + ':' + d.clock_in[1], sx + 20, sy );
+          }
         }
       });
       sm.ui_shift_hours = new UI.Slider({
@@ -2854,10 +2860,13 @@ StateMachine.states.floor = {
       // render staff menu
       const button = sm.bg_schedule.active_button;
       if(button){
+        const active = get_active_day_data(sm);
         ctx.fillStyle = 'white';
         ctx.fillRect(10, 320, 64 * 7, 150);
-        sm.ui_shift_start.render(ctx);
-        sm.ui_shift_hours.render(ctx);
+        if(active.day){
+          sm.ui_shift_start.render(ctx);
+          sm.ui_shift_hours.render(ctx);
+        }
       }  
     }
   };
