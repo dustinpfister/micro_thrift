@@ -1856,6 +1856,9 @@ const UI = {};
       ctx.fillStyle = 'white';
       ctx.fillRect(x, this.y, bar_w, this.h);
       ctx.strokeRect(x, this.y, bar_w, this.h);
+      if(this.render_over){
+        this.render_over.call(this, ctx, this);
+      }
     }
     click_check (x=-1, y=-1) {
       if( utils.bounding_box(this, {x: x, y: y, w:1, h:1}) ){
@@ -2703,8 +2706,8 @@ StateMachine.states.floor = {
   // set shift data from schedule
   const set_shift_data_from_schedule = ( sm ) => {
     const active = get_active_day_data(sm);
-    const clock_in = active.day.clock_in[0];
-    const clock_out = active.day.clock_out[0];
+    const clock_in = active.day.clock_in;
+    const clock_out = active.day.clock_out;
     const hours = 11, per_hour = 4;
     // setting per for the sliders
     if(active){
@@ -2712,19 +2715,22 @@ StateMachine.states.floor = {
       const slider1 = sm.ui_shift_start;
       
       slider1.data = {
+        clock_in: clock_in,
+        clock_out: clock_out,
         hours: hours, 
         per_hour: per_hour, 
         options: per_hour * hours
       };
-      slider1.per = ( clock_in - 8 ) / ( 19 - 8 );
+      slider1.per = ( clock_in[0] - 8 ) / ( 19 - 8 );
       
       // hours of shift slider
       const slider2 = sm.ui_shift_hours;
-      const store_in = clock_in - 8;
-      const max_hours = 19 - clock_in;
+      const store_in = clock_in[0] - 8;
+      const max_hours = 19 - clock_in[0];
       const options = max_hours * per_hour
       slider2.data = {
         clock_in: clock_in,
+        clock_out: clock_out,
         store_in: store_in,
         max_hours: max_hours,
         options: options
@@ -2772,7 +2778,9 @@ StateMachine.states.floor = {
     },
     
     init: function(sm) {
-      const data = sm.states.staff.data;
+    
+      const schedule = sm.schedule;
+    
       sm.bg_schedule = new UI.ButtonGrid({
         x: 10, y: 50,
         bw: 7, bh: conf.MAX_OBJECTS.worker,
@@ -2810,6 +2818,16 @@ StateMachine.states.floor = {
         x: 20, y: 330, w: 256, h: 50,
         on_click: function(x, y, slider){
           set_shift_data_from_sliders(sm);
+        },
+        render_over: function(ctx, slider){
+          const sx = slider.x + slider.w;
+          const sy = slider.y;
+          const d = slider.data;
+          ctx.fillStyle = 'black';
+          ctx.textBaseline = 'top';
+          ctx.textAlign = 'left';
+          ctx.font = '10px monospace';
+          ctx.fillText('clock_in: ' + d.clock_in[0] + ':' + d.clock_in[1], sx + 20, sy );
         }
       });
       sm.ui_shift_hours = new UI.Slider({
