@@ -53,11 +53,15 @@
 * can view the state of the schedule in staff state
 * UI.Slider class started to be used in a shift menu
 * shift menu has a slider for setting start time at 15 min steps
+* display clock in time for start time slider
+* start time slider set to proper state when a day is clicked
 
 <!-- edit schedule -->
-* (pending) - shift menu sliders set to proper states when a day is clicked
-* (pending) - shift menu has a slider for setting hours after start time
-* (pending) - display clock in and out times in shift menu
+* (pending) - shift hours slider set to proper state when a day is clicked
+* (pending) - shift hours slider now displaying clock out time, hours, and option over total options
+* (pending) - shift hours slider set to proper state when start time slider is adjusted
+* (pending) - shift hours slider also sets minutes of clock in time
+* (pending) - shift menu can be used to create a new shift day for a worker
 * (pending) - shift menu can be used to disable a day completely for a worker
 
 <!-- misc -->
